@@ -8,7 +8,6 @@ using Photon.Realtime;
 
 public class PunLobbyManager : MonoBehaviourPunCallbacks
 {
-    public UnityEvent onJoinedLobby;
     public UnityEvent onJoinedRoom;
     public UnityEvent onDisconnected;
 
@@ -20,22 +19,12 @@ public class PunLobbyManager : MonoBehaviourPunCallbacks
     public StringModifier roomNameModifier;
 
     public List<GameObject> roomInfoListReceivers;
-
-    private void Start() {
-        if (PhotonNetwork.IsConnected && PhotonNetwork.JoinLobby()) {
-            Debug.Log("Try joining lobby");
-        }
-    }
+    private List<RoomInfo> currentRoomList = new List<RoomInfo>();
     
     private void Update() {
         if (!PhotonNetwork.IsConnected) {
             onDisconnected.Invoke();
         }
-    }
-
-    public override void OnJoinedLobby() {
-        onJoinedLobby.Invoke();
-        Debug.Log("Joined lobby");
     }
 
     public bool ProcessRoomName(string origin, out string result) {
@@ -87,23 +76,58 @@ public class PunLobbyManager : MonoBehaviourPunCallbacks
     }
 
     public override void OnRoomListUpdate(List<RoomInfo> roomList) {
-        List<RoomInfo> roomListWithoutEmpty = new List<RoomInfo>();
+        currentRoomList.Clear();
         foreach(var room in roomList) {
-            if (room.PlayerCount > 0) roomListWithoutEmpty.Add(room);
+            if (room.PlayerCount > 0) currentRoomList.Add(room);
         }
         foreach (var receiver in roomInfoListReceivers) {
-            receiver.SendMessage("OnReceiveRoomInfoList", roomListWithoutEmpty);
+            receiver.SendMessage("OnReceiveRoomInfoList", currentRoomList);
         }
     }
 
-    public bool JoinRoom(string roomName) {
+    public bool GetRoomInfo(string roomName, out RoomInfo roomInfo) {
+        foreach (var room in currentRoomList) {
+            if (room.Name == roomName) {
+                roomInfo = room;
+                return true;
+            }
+        }
+        roomInfo = null;
+        return false;
+    }
+
+    public bool JoinRoom(string roomName, string password) {
         if (PhotonNetwork.InRoom) {
             Debug.LogError("Joining room failed. Already in a room.");
             return false;
         }
+        if (GetRoomInfo(roomName, out RoomInfo roomInfo)) {
+            if (roomInfo.PlayerCount < roomInfo.MaxPlayers) {
+                if ((bool)roomInfo.CustomProperties["hasPassword"]) {
+                    if (password == (string)roomInfo.CustomProperties["password"]) {
+                        return JoinRoom(roomName);
+                    } else {
+                        Debug.LogError("Wrong password.");
+                        return false;
+                    }
+                } else {
+                    return JoinRoom(roomName);
+                }
+            } else {
+                Debug.LogError("The room is full." + roomName);
+                return false;
+            }
+        } else {
+            Debug.LogError("Cannot get info of room: " + roomName);
+            return false;
+        }
+    }
+
+    private bool JoinRoom(string roomName) {
         if (PhotonNetwork.JoinRoom(roomName)) {
             return true;
-        } else {
+        } 
+        else {
             Debug.LogError("Joining room failed.");
             return false;
         }
