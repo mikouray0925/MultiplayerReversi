@@ -8,6 +8,7 @@ public class PunManager : MonoBehaviourPunCallbacks
 {
     public static PunManager instance;
 
+    public UnityEvent onStartConnecting;
     public UnityEvent onConnectedToMaster;
     
     void Awake() {
@@ -16,6 +17,7 @@ public class PunManager : MonoBehaviourPunCallbacks
 
     public void Connect() {
         PhotonNetwork.ConnectUsingSettings();
+        onStartConnecting.Invoke();
         Debug.Log("Start connecting");
     }
 

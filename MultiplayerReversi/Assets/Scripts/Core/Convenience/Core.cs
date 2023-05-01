@@ -2,23 +2,23 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MikouBehavior : MonoBehaviour
+public static class Core
 {
-    public GlobalManager globalManager {
+    public static GlobalManager globalManager {
         get {
             return GlobalManager.instance;
         }
         private set {}
     }
 
-    public SceneController sceneController {
+    public static SceneController sceneController {
         get {
             return SceneController.instance;
         }
         private set {}
     }
 
-    public AudioManager audioController {
+    public static AudioManager audioManager {
         get {
             return AudioManager.instance;
         }
