@@ -9,6 +9,7 @@ using Photon.Realtime;
 public class PunLobbyManager : MonoBehaviourPunCallbacks
 {
     public UnityEvent onJoinedRoom;
+    public UnityEvent onRoomListUpdate;
     public UnityEvent onDisconnected;
 
     public delegate bool StringValidation(string str);
@@ -17,13 +18,61 @@ public class PunLobbyManager : MonoBehaviourPunCallbacks
 
     public delegate string StringModifier(string str);
     public StringModifier roomNameModifier;
+    public List<RoomInfo> currentRoomList {get; private set;} = new List<RoomInfo>();
+    
+    private void Awake() {
+        PunManager.instance.currentLobby = this;
+    }
 
-    public List<GameObject> roomInfoListReceivers;
-    private List<RoomInfo> currentRoomList = new List<RoomInfo>();
+    private void Start() {
+        OnRoomListUpdate(PunManager.instance.roomListBuffer);
+    }
     
     private void Update() {
         if (!PhotonNetwork.IsConnected) {
             onDisconnected.Invoke();
+        }
+    }
+
+    private void OnDestroy() {
+        PunManager.instance.currentLobby = null;
+    }
+
+    public struct CreateRoomInfo {
+        public string roomName;
+        public byte maxPlayerNum;
+        public bool hasPassword;
+        public string password;
+    }
+
+    public bool CreateRoom(CreateRoomInfo info) {
+        if ( info.hasPassword && 
+            (info.password.Length <= 0 ||
+            (passwordValidation != null && !passwordValidation(info.password)))) {
+            Debug.LogWarning("Invalid room password: " + info.password);
+            return false;
+        }
+
+        ExitGames.Client.Photon.Hashtable roomProps = new ExitGames.Client.Photon.Hashtable();
+        roomProps["hasPassword"] = info.hasPassword;
+        roomProps["password"] = info.password;
+
+        RoomOptions options = new RoomOptions();
+        options.CustomRoomProperties = roomProps;
+        options.CustomRoomPropertiesForLobby = new string[] {"hasPassword", "password"};
+        options.MaxPlayers = info.maxPlayerNum;
+
+        return CreateRoom(info.roomName, options);
+    }
+
+    protected bool CreateRoom(string _roomName, RoomOptions options) {
+        if (ProcessRoomName(_roomName, out string roomName)) {
+            PhotonNetwork.CreateRoom(roomName, options);
+            Debug.Log("Create room: " + roomName);
+            return true;
+        } 
+        else {
+            return false;
         }
     }
 
@@ -46,43 +95,12 @@ public class PunLobbyManager : MonoBehaviourPunCallbacks
         }
     }
 
-    private bool CreateRoom(string _roomName, RoomOptions options) {
-        if (ProcessRoomName(_roomName, out string roomName)) {
-            PhotonNetwork.CreateRoom(roomName, options);
-            Debug.Log("Create room: " + roomName);
-            return true;
-        } 
-        else {
-            return false;
-        }
-    }
-
-    public bool CreateRoom(string _roomName, byte maxPlayerNum = 0, bool hasPassword = false, string password = "") {
-        if ( password.Length <= 0 ||
-            (passwordValidation != null && !passwordValidation(password))) {
-            Debug.LogWarning("Invalid room password: " + password);
-            return false;
-        }
-
-        ExitGames.Client.Photon.Hashtable roomProps = new ExitGames.Client.Photon.Hashtable();
-        roomProps["hasPassword"] = hasPassword;
-        roomProps["password"] = password;
-
-        RoomOptions options = new RoomOptions();
-        options.CustomRoomProperties = roomProps;
-        options.MaxPlayers = maxPlayerNum;
-
-        return CreateRoom(_roomName, options);
-    }
-
     public override void OnRoomListUpdate(List<RoomInfo> roomList) {
         currentRoomList.Clear();
         foreach(var room in roomList) {
             if (room.PlayerCount > 0) currentRoomList.Add(room);
         }
-        foreach (var receiver in roomInfoListReceivers) {
-            receiver.SendMessage("OnReceiveRoomInfoList", currentRoomList);
-        }
+        onRoomListUpdate.Invoke();
     }
 
     public bool GetRoomInfo(string roomName, out RoomInfo roomInfo) {

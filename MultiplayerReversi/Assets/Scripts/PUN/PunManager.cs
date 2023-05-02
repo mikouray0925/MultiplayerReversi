@@ -3,14 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using Photon.Pun;
+using Photon.Realtime;
 
 public class PunManager : MonoBehaviourPunCallbacks
 {
     public static PunManager instance;
+    public PunLobbyManager currentLobby;
 
     public UnityEvent onStartConnecting;
     public UnityEvent onConnectedToMaster;
     public UnityEvent onJoinedLobby;
+
+    public List<RoomInfo> roomListBuffer = new List<RoomInfo>();
     
     void Awake() {
         instance = this;
@@ -35,5 +39,12 @@ public class PunManager : MonoBehaviourPunCallbacks
     public override void OnJoinedLobby() {
         onJoinedLobby.Invoke();
         Debug.Log("Joined lobby");
+    }
+
+    public override void OnRoomListUpdate(List<RoomInfo> roomList) {
+        roomListBuffer.Clear();
+        foreach (var room in roomList) {
+            roomListBuffer.Add(room);
+        }
     }
 }
