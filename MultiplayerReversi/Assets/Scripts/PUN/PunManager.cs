@@ -10,11 +10,12 @@ public class PunManager : MonoBehaviourPunCallbacks
     public static PunManager instance;
     public PunLobbyManager currentLobby;
 
+    [Header ("Event")]
     public UnityEvent onStartConnecting;
     public UnityEvent onConnectedToMaster;
     public UnityEvent onJoinedLobby;
 
-    public List<RoomInfo> roomListBuffer = new List<RoomInfo>();
+    public List<RoomInfo> currentRoomList {get; private set;} = new List<RoomInfo>();
     
     void Awake() {
         instance = this;
@@ -42,9 +43,9 @@ public class PunManager : MonoBehaviourPunCallbacks
     }
 
     public override void OnRoomListUpdate(List<RoomInfo> roomList) {
-        roomListBuffer.Clear();
-        foreach (var room in roomList) {
-            roomListBuffer.Add(room);
+        currentRoomList.Clear();
+        foreach(var room in roomList) {
+            if (room.PlayerCount > 0) currentRoomList.Add(room);
         }
     }
 }

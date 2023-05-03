@@ -6,12 +6,14 @@ using UnityEngine.Events;
 
 public class RoomCreatorUI : MonoBehaviour
 {    
-    public UnityEvent onCreateSuccess;
-    public UnityEvent onCreateFailed;
-    
+    [Header ("Input")]
     public InputField roomName;
     public Toggle hasPassword;
     public InputField password;
+
+    [Header ("Event")]
+    public UnityEvent onCreateSuccess;
+    public UnityEvent onCreateFailed;
 
     public void Create() {
         PunLobbyManager.CreateRoomInfo info = new PunLobbyManager.CreateRoomInfo();

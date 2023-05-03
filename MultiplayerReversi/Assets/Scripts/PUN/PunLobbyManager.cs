@@ -8,6 +8,7 @@ using Photon.Realtime;
 
 public class PunLobbyManager : MonoBehaviourPunCallbacks
 {
+    [Header ("Event")]
     public UnityEvent onJoinedRoom;
     public UnityEvent onRoomListUpdate;
     public UnityEvent onDisconnected;
@@ -18,14 +19,13 @@ public class PunLobbyManager : MonoBehaviourPunCallbacks
 
     public delegate string StringModifier(string str);
     public StringModifier roomNameModifier;
-    public List<RoomInfo> currentRoomList {get; private set;} = new List<RoomInfo>();
     
     private void Awake() {
         PunManager.instance.currentLobby = this;
     }
 
     private void Start() {
-        OnRoomListUpdate(PunManager.instance.roomListBuffer);
+        OnRoomListUpdate(PunManager.instance.currentRoomList);
     }
     
     private void Update() {
@@ -95,64 +95,62 @@ public class PunLobbyManager : MonoBehaviourPunCallbacks
         }
     }
 
+    public List<RoomInfo> RoomList {
+        get {
+            return PunManager.instance.currentRoomList;
+        }
+        private set {}
+    }
+
     public override void OnRoomListUpdate(List<RoomInfo> roomList) {
-        currentRoomList.Clear();
-        foreach(var room in roomList) {
-            if (room.PlayerCount > 0) currentRoomList.Add(room);
-        }
         onRoomListUpdate.Invoke();
-    }
-
-    public bool GetRoomInfo(string roomName, out RoomInfo roomInfo) {
-        foreach (var room in currentRoomList) {
-            if (room.Name == roomName) {
-                roomInfo = room;
-                return true;
-            }
-        }
-        roomInfo = null;
-        return false;
-    }
-
-    public bool JoinRoom(string roomName, string password) {
-        if (PhotonNetwork.InRoom) {
-            Debug.LogError("Joining room failed. Already in a room.");
-            return false;
-        }
-        if (GetRoomInfo(roomName, out RoomInfo roomInfo)) {
-            if (roomInfo.PlayerCount < roomInfo.MaxPlayers) {
-                if ((bool)roomInfo.CustomProperties["hasPassword"]) {
-                    if (password == (string)roomInfo.CustomProperties["password"]) {
-                        return JoinRoom(roomName);
-                    } else {
-                        Debug.LogError("Wrong password.");
-                        return false;
-                    }
-                } else {
-                    return JoinRoom(roomName);
-                }
-            } else {
-                Debug.LogError("The room is full." + roomName);
-                return false;
-            }
-        } else {
-            Debug.LogError("Cannot get info of room: " + roomName);
-            return false;
-        }
-    }
-
-    private bool JoinRoom(string roomName) {
-        if (PhotonNetwork.JoinRoom(roomName)) {
-            return true;
-        } 
-        else {
-            Debug.LogError("Joining room failed.");
-            return false;
-        }
     }
 
     public override void OnJoinedRoom() {
         Debug.Log("Joined room");
         onJoinedRoom.Invoke();
+    }
+
+    public class JoinRoomHandler {
+        RoomInfo room;
+        public JoinRoomHandler(RoomInfo _room) {
+            room = _room;
+        }
+
+        public void StartProcess() {
+            if (PhotonNetwork.InRoom) {
+                Debug.LogError("Joining room failed. Already in a room.");
+                return;
+            }
+            if (room != null) {
+                if (room.PlayerCount < room.MaxPlayers) {
+                    if ((bool)room.CustomProperties["hasPassword"]) {
+                        UserInquirer.instance.InquirString(JoinWithPassword, "Enter password");
+                    } else {
+                        UserInquirer.instance.InquirBool(Join, $"Join {room.Name}?");
+                    }
+                } else {
+                    Debug.LogError("The room is full. " + room.Name);
+                    return;
+                }
+            } 
+        }
+
+        private void JoinWithPassword(string password) {
+            if (password == (string)room.CustomProperties["password"]) {
+                Join(true);
+            } else {
+                Debug.LogError("Wrong password entered.");
+            }
+        }
+
+        private void Join(bool confirm) {
+            if (!confirm) return;
+            if (PhotonNetwork.JoinRoom(room.Name)) {
+
+            } else {
+                Debug.LogError("Joining room failed.");
+            }
+        }
     }
 }

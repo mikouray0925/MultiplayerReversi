@@ -14,7 +14,7 @@ public class RoomListUI : MonoBehaviour
     LinkedList<RoomInfoUI> roomInfoList = new LinkedList<RoomInfoUI>();
     
     public void UpdateRoomInfoList() {
-        List<RoomInfo> roomList = PunManager.instance.currentLobby.currentRoomList;
+        List<RoomInfo> roomList = PunManager.instance.currentRoomList;
         while (roomInfoList.Count < roomList.Count) {
             roomInfoList.AddLast(Instantiate(roomInfoPrefab, contentRect).GetComponent<RoomInfoUI>());
         }

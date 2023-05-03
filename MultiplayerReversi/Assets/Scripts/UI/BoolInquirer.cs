@@ -4,11 +4,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 
-public class StringInquirer : MonoBehaviour
+public class BoolInquirer : MonoBehaviour
 {
     [Header ("UI")]
     [SerializeField] private Text infoText;
-    [SerializeField] private InputField input;
 
     [Header ("Event")]
     [SerializeField] private UnityEvent beforeInquir;
@@ -16,10 +15,10 @@ public class StringInquirer : MonoBehaviour
 
     bool isInquiring = false;
 
-    public delegate void Callback(string s);
+    public delegate void Callback(bool b);
     Callback callback;
-    public delegate string StringGetter();
-    public StringGetter getterToReplace;
+    public delegate bool BoolGetter();
+    public BoolGetter getterToReplace;
 
     public UnityAction<GameObject> beforeInquirAction;
     public UnityAction<GameObject> afterSubmitAction;
@@ -32,14 +31,14 @@ public class StringInquirer : MonoBehaviour
         isInquiring = true;
     }   
 
-    public void Submit() {
+    public void Submit(bool val) {
         if (isInquiring) {
             if (callback != null) {
                 if (getterToReplace != null) {
                     callback(getterToReplace());
                 }
-                else if (input) {
-                    callback(input.text);
+                else {
+                    callback(val);
                 }
                 callback = null;
             } 

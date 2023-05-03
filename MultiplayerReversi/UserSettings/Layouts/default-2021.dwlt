@@ -48,7 +48,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 200}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 102
+  controlID: 66
 --- !u!114 &3
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -94,8 +94,8 @@ MonoBehaviour:
     y: 0
     width: 236
     height: 707
-  m_MinSize: {x: 201, y: 221}
-  m_MaxSize: {x: 4001, y: 4021}
+  m_MinSize: {x: 200, y: 200}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 15}
   m_Panes:
   - {fileID: 15}
@@ -223,7 +223,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 200}
   m_MaxSize: {x: 16192, y: 16192}
   vertical: 1
-  controlID: 20
+  controlID: 56
 --- !u!114 &10
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -248,7 +248,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 100}
   m_MaxSize: {x: 16192, y: 8096}
   vertical: 0
-  controlID: 21
+  controlID: 57
 --- !u!114 &11
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -348,22 +348,22 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Prefabs/PUN
+    - Assets/Prefabs/UI
     m_Globs: []
     m_OriginalText: 
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets/Prefabs/PUN
+  - Assets/Prefabs/UI
   m_LastFoldersGridSize: -1
   m_LastProjectPath: C:\Users\MikouRay\Documents\coding\Projects\Games\MultiplayerReversi\MultiplayerReversi
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 129}
-    m_SelectedIDs: a65e0000
-    m_LastClickedID: 24230
-    m_ExpandedIDs: 00000000485e00004a5e00004c5e0000785e0000905e0000965e000000ca9a3b
+    scrollPos: {x: 0, y: 145}
+    m_SelectedIDs: e6640000
+    m_LastClickedID: 25830
+    m_ExpandedIDs: 00000000605e0000625e0000645e0000665e0000685e00009e5e000000ca9a3b
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -391,7 +391,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 00000000485e00004a5e00004c5e0000
+    m_ExpandedIDs: 00000000605e0000625e0000645e0000665e0000685e0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -523,7 +523,7 @@ MonoBehaviour:
       scrollPos: {x: 0, y: 0}
       m_SelectedIDs: 
       m_LastClickedID: 0
-      m_ExpandedIDs: 8eeff6ffa8f5f6ff10f8f6ff8600f7ff6e01f7ffbc01f7ff2204f7ff2a04f7ff3204f7ff4204f7ffc405f7ff4208f7ff9008f7fffa0af7ff180bf7ff240bf7ff2c0bf7ffa80bf7ff5c19f7ff881cf7ffc22cf7ff4c4ef7ffec5cf7ff1477ffff5c9affff5e9affffbc9bffffb0c1ffffccedfffff4eeffff28fbffff765d00008a5d0000a45d0000ba5d0000d85d0000ec5d00002a62000062620000fa7800002c790000068800002a880000f09700002c9800005898000056a6000012ac000036ac000068ac00008eac0000b0ac0000ecb900006aba0000a4ca000022cb0000
+      m_ExpandedIDs: 44b0ffff46b0ffff8cb1ffffdcb1fffffab1fffffeb1ffff02b2ffff06b2ffffb0b7ffff50c0ffff9cc0ffff04c3ffff1cc3ffff24c3ffff28c3ffffe6ecffffe2f3ffff2cf4ffffdaf8ffff18fbffff74620000e26200000663000076830000fe8a0000228b0000548b00007c8b00009e8b0000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -806,9 +806,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 1027.5383, y: 376.7197, z: -12.585649}
+    m_Target: {x: 1081.741, y: 532.6624, z: -9.368442}
     speed: 2
-    m_Value: {x: 1027.5383, y: 376.7197, z: -12.585649}
+    m_Value: {x: 1081.741, y: 532.6624, z: -9.368442}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -859,9 +859,9 @@ MonoBehaviour:
     speed: 2
     m_Value: {x: 0, y: 0, z: 0, w: 1}
   m_Size:
-    m_Target: 637.47314
+    m_Target: 541.886
     speed: 2
-    m_Value: 637.47314
+    m_Value: 541.886
   m_Ortho:
     m_Target: 1
     speed: 2

@@ -7,6 +7,7 @@ using Photon.Realtime;
 
 public class RoomInfoUI : MonoBehaviour
 {
+    [Header ("Display")]    
     [SerializeField] Image icon;
     [SerializeField] Text roomName;
     [SerializeField] Text playerNum;
@@ -20,6 +21,7 @@ public class RoomInfoUI : MonoBehaviour
                 roomName.text = value.Name;
                 playerNum.text = $"({value.PlayerCount}/{value.MaxPlayers})";
                 lockIcon.enabled = (bool)value.CustomProperties["hasPassword"];
+                currentRoom = value;
             }
         }
         get {
@@ -27,6 +29,8 @@ public class RoomInfoUI : MonoBehaviour
         }
     }
 
-    public void CallJoinRoomInteraction() {
+    public void StartJoinRoomInteraction() {
+        PunLobbyManager.JoinRoomHandler joinRoomHandler = new PunLobbyManager.JoinRoomHandler(currentRoom);
+        joinRoomHandler.StartProcess();
     }
 }
