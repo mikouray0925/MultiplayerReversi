@@ -11,7 +11,6 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
 {
     [Header("UI & Settings")]
     public Text roomNameText;
-    private RoomOptions roomOptions;
 
     [Header ("Event")]
     public UnityEvent onLeftRoom;
@@ -30,7 +29,6 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
     public Validation ableToStartGame;
 
     private void Start() {
-        roomOptions = new RoomOptions();
         if (PhotonNetwork.InRoom) {
             UpdateUI();
             UpdatePlayerList();
@@ -39,6 +37,10 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
                 onBecomeMasterClient.Invoke();
             }
         }
+    }
+
+    public void UpdateUI() {
+        if (roomNameText) roomNameText.text = PhotonNetwork.CurrentRoom.Name;
     }
 
     public void UpdatePlayerList() {
@@ -89,19 +91,13 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
         }
     }
 
-
-
-    // UI and Settings
-
-    public override void OnPlayerPropertiesUpdate(Player targetPlayer, PhotonHashtable changedProps)
-    {
-        foreach(var kvp in changedProps){
-            roomOptions.CustomRoomProperties[kvp.Key] = kvp.Value;
+    public void ChangeCustomProperties(PhotonHashtable propertiesNeedToChange) {
+        if (isMasterClient) {
+            PhotonHashtable properties = PhotonNetwork.CurrentRoom.CustomProperties;
+            foreach (var kvp in propertiesNeedToChange) {
+                properties[kvp.Key] = kvp.Value;
+            }
+            PhotonNetwork.CurrentRoom.SetCustomProperties(properties);
         }
-        UpdateUI();
-    }
-
-    private void UpdateUI(){
-        roomNameText.text = PhotonNetwork.CurrentRoom.Name;
     }
 }
