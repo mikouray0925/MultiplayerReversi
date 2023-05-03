@@ -8,6 +8,11 @@ public class BoolInquirer : MonoBehaviour
 {
     [Header ("UI")]
     [SerializeField] private Text infoText;
+    [SerializeField] private GameObject cancelButton;
+
+    [Header ("Settings")]
+    public bool deactivateAfterSubmit = false;
+    public bool destroyAfterSubmit = false;
 
     [Header ("Event")]
     [SerializeField] private UnityEvent beforeInquir;
@@ -23,11 +28,12 @@ public class BoolInquirer : MonoBehaviour
     public UnityAction<GameObject> beforeInquirAction;
     public UnityAction<GameObject> afterSubmitAction;
 
-    public void Inquir(Callback _callback, string info = "") {
+    public void Inquir(Callback _callback, string info = "", bool cancellable = true) {
         beforeInquir.Invoke();
         if (beforeInquirAction != null) beforeInquirAction.Invoke(gameObject);
-        if (infoText) infoText.text = info;
         callback = _callback;
+        if (infoText) infoText.text = info;
+        if (cancelButton) cancelButton.SetActive(cancellable);
         isInquiring = true;
     }   
 
@@ -45,6 +51,8 @@ public class BoolInquirer : MonoBehaviour
             isInquiring = false;
             afterSubmit.Invoke();
             if (afterSubmitAction != null) afterSubmitAction.Invoke(gameObject);
+            if (deactivateAfterSubmit) gameObject.SetActive(false);
+            if (destroyAfterSubmit) Destroy(gameObject);
         }
     }
 }

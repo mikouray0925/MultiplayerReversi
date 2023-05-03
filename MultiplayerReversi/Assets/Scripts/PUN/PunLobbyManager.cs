@@ -11,7 +11,6 @@ public class PunLobbyManager : MonoBehaviourPunCallbacks
     [Header ("Event")]
     public UnityEvent onJoinedRoom;
     public UnityEvent onRoomListUpdate;
-    public UnityEvent onDisconnected;
 
     public delegate bool StringValidation(string str);
     public StringValidation roomNameValidation;
@@ -26,12 +25,6 @@ public class PunLobbyManager : MonoBehaviourPunCallbacks
 
     private void Start() {
         OnRoomListUpdate(PunManager.instance.currentRoomList);
-    }
-    
-    private void Update() {
-        if (!PhotonNetwork.IsConnected) {
-            onDisconnected.Invoke();
-        }
     }
 
     private void OnDestroy() {

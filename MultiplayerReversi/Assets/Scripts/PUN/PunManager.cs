@@ -13,14 +13,26 @@ public class PunManager : MonoBehaviourPunCallbacks
     [Header ("Event")]
     public UnityEvent onStartConnecting;
     public UnityEvent onConnectedToMaster;
+    public UnityEvent onDisconnected;
     public UnityEvent onJoinedLobby;
 
     public List<RoomInfo> currentRoomList {get; private set;} = new List<RoomInfo>();
+
+    public bool isConnectedToMaster {get; private set;} = false;
     
     void Awake() {
         instance = this;
     }
-    public void Connect() {
+
+    private void Update() {
+        if (isConnectedToMaster && !PhotonNetwork.IsConnected) {
+            onDisconnected.Invoke();
+            isConnectedToMaster = false;
+        }
+    }
+
+    public void Connect(string localPlayerName) {
+        PhotonNetwork.LocalPlayer.NickName = localPlayerName;
         PhotonNetwork.ConnectUsingSettings();
         onStartConnecting.Invoke();
         Debug.Log("Start connecting");
@@ -28,6 +40,7 @@ public class PunManager : MonoBehaviourPunCallbacks
 
     public override void OnConnectedToMaster() {
         onConnectedToMaster.Invoke();
+        isConnectedToMaster = true;
         Debug.Log("Connected to master");
     }
 

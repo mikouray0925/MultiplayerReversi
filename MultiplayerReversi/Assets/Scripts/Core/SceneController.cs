@@ -7,7 +7,7 @@ public class SceneController : MonoBehaviour
 {   
     public static SceneController instance {get; private set;}
     public GameObject globalManager;
-    public List<GameObject> objNeedToKeep = new List<GameObject>();
+    public HashSet<GameObject> objNeedToKeep = new HashSet<GameObject>();
 
     public bool isChangingScene {get; private set;}
     public float changineSceneProgress {get; private set;}
@@ -24,7 +24,7 @@ public class SceneController : MonoBehaviour
         if (isChangingScene) return;
         StartCoroutine(ChangingSceneCoroutine(sceneName, moreObjNeedToMove));
     }
-    IEnumerator ChangingSceneCoroutine(string sceneName, List<GameObject> moreObjNeedToMove, bool showLoadingScreen = true) {
+    IEnumerator ChangingSceneCoroutine(string sceneName, List<GameObject> moreObjNeedToMove) {
         isChangingScene = true;
 
         Scene currentScene = SceneManager.GetActiveScene();

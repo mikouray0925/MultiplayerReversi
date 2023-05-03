@@ -9,6 +9,10 @@ public class GlobalManager : MonoBehaviour
     void Awake() {
         instance = this;
     }
+
+    private void OnDestroy() {
+        Debug.LogError("Global manager is desroyed!!!");
+    }
 }
 
 

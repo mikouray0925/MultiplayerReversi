@@ -5,6 +5,6 @@ using UnityEngine;
 public class MainMenuManager : MonoBehaviour
 {
     public void PlayMultiplayerMode() {
-        PunManager.instance.Connect();
+        UserInquirer.instance.InquirString(PunManager.instance.Connect, "Enter name:");
     }
 }

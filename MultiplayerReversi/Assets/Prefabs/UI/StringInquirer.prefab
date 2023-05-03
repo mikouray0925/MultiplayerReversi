@@ -466,6 +466,7 @@ GameObject:
   - component: {fileID: 4024065048464007708}
   - component: {fileID: 4024065048464007709}
   - component: {fileID: 4024065048464007683}
+  - component: {fileID: 1924456161494321017}
   m_Layer: 0
   m_Name: StringInquirer
   m_TagString: Untagged
@@ -549,6 +550,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   infoText: {fileID: 4024065047289641116}
   input: {fileID: 4024065048760886429}
+  cancelButton: {fileID: 4024065048638832415}
+  deactivateAfterSubmit: 0
+  destroyAfterSubmit: 1
   beforeInquir:
     m_PersistentCalls:
       m_Calls:
@@ -566,19 +570,28 @@ MonoBehaviour:
         m_CallState: 2
   afterSubmit:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 4024065048464007704}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
+--- !u!114 &1924456161494321017
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4024065048464007704}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 362740af45c65e946af6aa604927bc47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  onEnable:
+    m_PersistentCalls:
+      m_Calls: []
+  onDisable:
+    m_PersistentCalls:
+      m_Calls: []
+  onDestroy:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &4024065048464654115
 GameObject:
   m_ObjectHideFlags: 0
@@ -781,10 +794,10 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 4024065048464007704}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
+      - m_Target: {fileID: 1924456161494321017}
+        m_TargetAssemblyTypeName: CommonBehavior, Assembly-CSharp
+        m_MethodName: DestroyThis
+        m_Mode: 4
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
