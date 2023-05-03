@@ -3,14 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 using Photon.Pun;
 using Photon.Realtime;
 using PhotonHashtable = ExitGames.Client.Photon.Hashtable;
 
 public class PunRoomManager : MonoBehaviourPunCallbacks
 {
-    [Header("UI & Settings")]
+    [Header("UI")]
     public Text roomNameText;
+
+    [Header ("Component")]
+    public PunSceneController sceneController;
 
     [Header ("Event")]
     public UnityEvent onLeftRoom;
@@ -22,11 +26,23 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
     public UnityEvent onBecomeMasterClient;
     public UnityEvent onNoLongerMasterClient;
     public UnityEvent onGameStarted;
+    public UnityEvent onEnterPlayingRoom;
 
     public List<Player> playerList {get; private set;} = new List<Player>();
     public bool isMasterClient {get; private set;} = false;
+
+    public enum State {
+        Preparing,
+        Playing
+    }
     public delegate bool Validation();
     public Validation ableToStartGame;
+
+    private PhotonView pv;
+
+    private void Awake() {
+        pv = GetComponent<PhotonView>();
+    }
 
     private void Start() {
         if (PhotonNetwork.InRoom) {
@@ -35,6 +51,14 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
             if (PhotonNetwork.IsMasterClient) {
                 isMasterClient = true;
                 onBecomeMasterClient.Invoke();
+                PhotonHashtable propNeedToChange = new PhotonHashtable();
+                propNeedToChange["currentState"] = State.Preparing;
+                ChangeCustomProperties(propNeedToChange);
+            } 
+            else {
+                if ((State)PhotonNetwork.CurrentRoom.CustomProperties["currentState"] == State.Playing) {
+                    onEnterPlayingRoom.Invoke();
+                }
             }
         }
     }
@@ -53,6 +77,7 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
         onPlayerListUpdate.Invoke();
     }
 
+    
     public override void OnMasterClientSwitched(Player newMasterClient) {
         if (!isMasterClient &&  PhotonNetwork.IsMasterClient) {
             onBecomeMasterClient.Invoke();
@@ -63,7 +88,6 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
             isMasterClient = false;
         }
     }
-
     public override void OnPlayerEnteredRoom(Player player) {
         UpdatePlayerList();
         onPlayerEntered.Invoke();
@@ -87,6 +111,9 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
     public void StartGame() {
         if ( ableToStartGame == null ||
             (ableToStartGame != null && ableToStartGame())) {
+            PhotonHashtable propNeedToChange = new PhotonHashtable();
+            propNeedToChange["currentState"] = State.Playing;
+            ChangeCustomProperties(propNeedToChange);
             onGameStarted.Invoke();
         }
     }
