@@ -5,17 +5,13 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using Photon.Pun;
 using Photon.Realtime;
-using Hashtable = ExitGames.Client.Photon.Hashtable;
+using PhotonHashtable = ExitGames.Client.Photon.Hashtable;
 
 public class PunRoomManager : MonoBehaviourPunCallbacks
 {
-    
-
     [Header("UI & Settings")]
     public Text roomNameText;
     private RoomOptions roomOptions;
-
-    
 
     [Header ("Event")]
     public UnityEvent onLeftRoom;
@@ -97,7 +93,7 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
 
     // UI and Settings
 
-    public override void OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)
+    public override void OnPlayerPropertiesUpdate(Player targetPlayer, PhotonHashtable changedProps)
     {
         foreach(var kvp in changedProps){
             roomOptions.CustomRoomProperties[kvp.Key] = kvp.Value;
