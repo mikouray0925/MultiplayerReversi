@@ -21,6 +21,7 @@ public class RoomCreatorUI : MonoBehaviour
         info.hasPassword = hasPassword.isOn;
         info.password = password.text;
         info.maxPlayerNum = 2;
+        info.timeLimit = "30s";
         if (PunManager.instance.currentLobby.CreateRoom(info)) {
             onCreateSuccess.Invoke();
         } else {

@@ -9,6 +9,7 @@ public class PunManager : MonoBehaviourPunCallbacks
 {
     public static PunManager instance;
     public PunLobbyManager currentLobby;
+    public PunRoomManager currentRoom;
 
     [Header ("Event")]
     public UnityEvent onStartConnecting;

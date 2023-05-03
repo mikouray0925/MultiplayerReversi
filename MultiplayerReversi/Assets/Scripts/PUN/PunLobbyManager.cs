@@ -43,6 +43,7 @@ public class PunLobbyManager : MonoBehaviourPunCallbacks
         public byte maxPlayerNum;
         public bool hasPassword;
         public string password;
+        public string timeLimit;
     }
 
     public bool CreateRoom(CreateRoomInfo info) {
@@ -56,6 +57,7 @@ public class PunLobbyManager : MonoBehaviourPunCallbacks
         ExitGames.Client.Photon.Hashtable roomProps = new ExitGames.Client.Photon.Hashtable();
         roomProps["hasPassword"] = info.hasPassword;
         roomProps["password"] = info.password;
+        roomProps["timeLimit"] = info.timeLimit;
 
         RoomOptions options = new RoomOptions();
         options.CustomRoomProperties = roomProps;
