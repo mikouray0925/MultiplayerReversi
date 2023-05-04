@@ -26,6 +26,7 @@ public class ReversiChess : MonoBehaviour
             if (value == State.White || value == State.FlippingToWhite) {
                 transform.eulerAngles = new Vector3(180f, 0, 0);
             }
+            currentState = value;
         }
     }
     public string boardIndex {get; private set;} = "";
