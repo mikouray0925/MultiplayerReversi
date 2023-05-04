@@ -25,6 +25,12 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         propNeedToChange["blackActId"] = PhotonNetwork.LocalPlayer.ActorNumber;
         propNeedToChange["whiteActId"] = -1;
 
+        for (int row = 1; row <= 8; row++) {
+            for (char col = 'A'; col <= 'H'; col++) {
+                propNeedToChange[row.ToString() + col] = ReversiChess.State.Unuse;
+            }
+        }
+
         inRoom.ChangeCustomProperties(propNeedToChange);
     }
 
