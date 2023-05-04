@@ -9,7 +9,7 @@ using PhotonHashtable = ExitGames.Client.Photon.Hashtable;
 
 public class PunReversiManager : MonoBehaviourPunCallbacks
 {
-    public PunRoomManager inRoom;
+    public PunRoomManager roomManager;
     public PunSceneController sceneController;
     public string gameSceneName;
     public Dictionary<string, ReversiChess> chessesOnBoard;
@@ -53,12 +53,12 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
                 propNeedToChange[row.ToString() + col] = ReversiChess.State.Unused;
             }
         }
-
-        inRoom.ChangeCustomProperties(propNeedToChange);
+        roomManager = GetComponent<PunRoomManager>();
+        roomManager.ChangeCustomProperties(propNeedToChange);
     }
 
     private void Update() {
-        if ( PhotonNetwork.InRoom && inRoom &&
+        if (PhotonNetwork.InRoom && roomManager != null &&
             (PunRoomManager.State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"] == PunRoomManager.State.Playing) {
             if (PhotonNetwork.IsMasterClient) DoMasterClientPlayBusiness();
             DoClientPlayBusiness();
@@ -74,6 +74,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
                 (int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"] != -1) {
                 currentState = GameState.WaitingForAllReady;
             }
+            // Set opponent as opposite side
             if (PhotonNetwork.CurrentRoom.PlayerCount >= 2) {
                 if ((int)PhotonNetwork.CurrentRoom.CustomProperties["blackActId"] == -1) {
                     foreach (var kvp in PhotonNetwork.CurrentRoom.Players) {
@@ -93,7 +94,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
                 }
             }
         }
-
+        // TODO: if one player left, return to previous game state?
         if (gameState == GameState.WaitingForAllReady) {
             if ((int)PhotonNetwork.CurrentRoom.CustomProperties["blackActId"] != -1 &&
                 (int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"] != -1 &&
@@ -103,7 +104,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         }
 
         propNeedToChange["gameState"] = currentState;
-        inRoom.ChangeCustomProperties(propNeedToChange);
+        roomManager.ChangeCustomProperties(propNeedToChange);
         CallMasterUploadGameData();
     }
 
@@ -125,7 +126,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
     }
     [PunRPC]
     private void RpcUploadGameData(PhotonMessageInfo info) {
-        if (PhotonNetwork.InRoom && inRoom) {
+        if (PhotonNetwork.InRoom && roomManager) {
             PhotonHashtable propNeedToChange = new PhotonHashtable();
             if (chessesOnBoard != null) {
                 for (int row = 1; row <= 8; row++) {
@@ -137,7 +138,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
 
                 propNeedToChange["lastUploadGameDataTime"] = PhotonNetwork.Time;
             }
-            inRoom.ChangeCustomProperties(propNeedToChange);
+            roomManager.ChangeCustomProperties(propNeedToChange);
         }
     }
 
@@ -222,9 +223,9 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
 
     public Player BlackPlayer {
         get {
-            if (PhotonNetwork.InRoom && inRoom) {
+            if (PhotonNetwork.InRoom && roomManager) {
                 int actorId = (int)PhotonNetwork.CurrentRoom.CustomProperties["blackActId"];
-                if (inRoom.players.TryGetValue(actorId, out Player player)) {
+                if (roomManager.players.TryGetValue(actorId, out Player player)) {
                     return player;
                 } else return null;
             } else return null;
@@ -233,9 +234,9 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
 
     public Player WhitePlayer {
         get {
-            if (PhotonNetwork.InRoom && inRoom) {
+            if (PhotonNetwork.InRoom && roomManager) {
                 int actorId = (int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"];
-                if (inRoom.players.TryGetValue(actorId, out Player player)) {
+                if (roomManager.players.TryGetValue(actorId, out Player player)) {
                     return player;
                 } else return null;
             } else return null;
@@ -243,37 +244,37 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
     }
 
     public override void OnPlayerEnteredRoom(Player player) {
-        if (PhotonNetwork.InRoom && inRoom && PhotonNetwork.IsMasterClient) {
+        if (PhotonNetwork.InRoom && roomManager && PhotonNetwork.IsMasterClient) {
             PhotonHashtable propNeedToChange = new PhotonHashtable();
 
             if ((int)PhotonNetwork.CurrentRoom.CustomProperties["blackActId"] == -1) {
                 propNeedToChange["blackActId"] = player.ActorNumber;
-                inRoom.ChangeCustomProperties(propNeedToChange);
+                roomManager.ChangeCustomProperties(propNeedToChange);
             }
 
             else if ((int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"] == -1) {
                 propNeedToChange["whiteActId"] = player.ActorNumber;
-                inRoom.ChangeCustomProperties(propNeedToChange);
+                roomManager.ChangeCustomProperties(propNeedToChange);
             }
         }
     }
 
     public override void OnPlayerLeftRoom(Player player) {
-        if (PhotonNetwork.InRoom && inRoom && PhotonNetwork.IsMasterClient) {
+        if (PhotonNetwork.InRoom && roomManager && PhotonNetwork.IsMasterClient) {
             PhotonHashtable propNeedToChange = new PhotonHashtable();
 
             if ((int)PhotonNetwork.CurrentRoom.CustomProperties["blackActId"] == player.ActorNumber) {
                 propNeedToChange["blackActId"] = -1;
                 propNeedToChange["gameState"] = GameState.Paused;
                 blackReady = false;
-                inRoom.ChangeCustomProperties(propNeedToChange);
+                roomManager.ChangeCustomProperties(propNeedToChange);
             }
 
             if ((int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"] == player.ActorNumber) {
                 propNeedToChange["whiteActId"] = -1;
                 propNeedToChange["gameState"] = GameState.Paused;
                 whiteReady = false;
-                inRoom.ChangeCustomProperties(propNeedToChange);
+                roomManager.ChangeCustomProperties(propNeedToChange);
             }
         }
     }

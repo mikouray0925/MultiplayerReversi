@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 using Photon.Pun;
 using Photon.Realtime;
 using PhotonHashtable = ExitGames.Client.Photon.Hashtable;
+using System.Text;
 
 public class PunRoomManager : MonoBehaviourPunCallbacks
 {
@@ -15,6 +16,9 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
 
     [Header ("Component")]
     public PunSceneController sceneController;
+
+    [Header ("Debug")]
+    [SerializeField] private bool PrintDebugMsg = false;
 
     [Header ("Event")]
     public UnityEvent onInitRoom;
@@ -77,6 +81,26 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
             propNeedToChange["masterSceneName"] = SceneManager.GetActiveScene().name;
             propNeedToChange["roomState"] = currentState;
             ChangeCustomProperties(propNeedToChange);
+        }
+        if(PrintDebugMsg){
+            StringBuilder sb = new StringBuilder();
+            sb = sb.Append("Debug Message: \n");
+            sb = sb.Append("PhotonNetwork.InRoom: ").Append(PhotonNetwork.InRoom).Append("\n");
+            sb = sb.Append("PhotonNetwork.IsMasterClient: ").Append(PhotonNetwork.IsMasterClient).Append("\n");
+            sb = sb.Append("PhotonNetwork.CurrentRoom.MasterClientId: ").Append(PhotonNetwork.CurrentRoom.MasterClientId).Append("\n");
+            sb = sb.Append("PhotonNetwork.CurrentRoom: ").Append(PhotonNetwork.CurrentRoom).Append("\n");
+            sb = sb.Append("PhotonNetwork.CurrentRoom.CustomProperties: ").Append(PhotonNetwork.CurrentRoom.CustomProperties).Append("\n");
+            sb = sb.Append("PhotonNetwork.CurrentRoom.Name: ").Append(PhotonNetwork.CurrentRoom.Name).Append("\n");
+            sb = sb.Append("PhotonNetwork.CurrentRoom.PlayerCount: ").Append(PhotonNetwork.CurrentRoom.PlayerCount).Append("\n");
+            sb = sb.Append("PhotonNetwork.CurrentRoom.MaxPlayers: ").Append(PhotonNetwork.CurrentRoom.MaxPlayers).Append("\n");
+            sb = sb.Append("PhotonNetwork.CurrentRoom.IsOpen: ").Append(PhotonNetwork.CurrentRoom.IsOpen).Append("\n");
+            sb = sb.Append("\nUser and States: \n");
+            sb = sb.Append("Black Actor ID: ").Append((int)PhotonNetwork.CurrentRoom.CustomProperties["blackActId"]).Append("\n");
+            sb = sb.Append("White Actor ID: ").Append((int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"]).Append("\n");
+            sb = sb.Append("Room State: ").Append((State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"]).Append("\n");;
+            sb = sb.Append("Game State: ").Append((State)PhotonNetwork.CurrentRoom.CustomProperties["gameState"]);
+            Debug.Log(sb.ToString());
+            PrintDebugMsg = false;
         }
     }
 

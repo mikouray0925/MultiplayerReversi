@@ -29,8 +29,9 @@ public class ReversiChess : MonoBehaviour
             currentState = value;
         }
     }
-    public string boardIndex {get; private set;} = "";
 
+    public string boardIndex {get; private set;} = "";
+    
     public string BoardIndex {
         get {
             return boardIndex;
