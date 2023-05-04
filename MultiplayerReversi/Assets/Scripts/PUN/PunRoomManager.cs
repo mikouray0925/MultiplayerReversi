@@ -17,18 +17,17 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
     public PunSceneController sceneController;
 
     [Header ("Event")]
+    public UnityEvent onInitRoom;
     public UnityEvent onLeftRoom;
     public UnityEvent onPlayerListUpdate;
     public UnityEvent onPlayerEntered;
     public UnityEvent onPlayerLeft;
-    public UnityEvent<Player> onPlayerEntered_Player;
-    public UnityEvent<Player> onPlayerLeft_Player;
     public UnityEvent onBecomeMasterClient;
     public UnityEvent onNoLongerMasterClient;
     public UnityEvent onGameStarted;
     public UnityEvent onEnterPlayingRoom;
 
-    public List<Player> playerList {get; private set;} = new List<Player>();
+    public Dictionary<int, Player> players {get; private set;} = new Dictionary<int, Player>();
     public bool isMasterClient {get; private set;} = false;
 
     public enum State {
@@ -54,6 +53,7 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
                 PhotonHashtable propNeedToChange = new PhotonHashtable();
                 propNeedToChange["currentState"] = State.Preparing;
                 ChangeCustomProperties(propNeedToChange);
+                onInitRoom.Invoke();
             } 
             else {
                 if ((State)PhotonNetwork.CurrentRoom.CustomProperties["currentState"] == State.Playing) {
@@ -68,10 +68,10 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
     }
 
     public void UpdatePlayerList() {
-        playerList.Clear();
+        players.Clear();
         if (PhotonNetwork.CurrentRoom != null) {
             foreach (var kvp in PhotonNetwork.CurrentRoom.Players) {
-                playerList.Add(kvp.Value);
+                players.Add(kvp.Key, kvp.Value);
             }
         }
         onPlayerListUpdate.Invoke();
@@ -91,13 +91,11 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
     public override void OnPlayerEnteredRoom(Player player) {
         UpdatePlayerList();
         onPlayerEntered.Invoke();
-        onPlayerEntered_Player.Invoke(player);
     }
     
     public override void OnPlayerLeftRoom(Player player) {
         UpdatePlayerList();
         onPlayerLeft.Invoke();
-        onPlayerLeft_Player.Invoke(player);
     }
 
     public void LeaveRoom() {

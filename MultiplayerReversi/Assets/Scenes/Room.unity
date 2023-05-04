@@ -293,6 +293,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 535391724}
   m_CullTransparentMesh: 1
+--- !u!1 &629574352
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 629574353}
+  - component: {fileID: 629574354}
+  m_Layer: 0
+  m_Name: ReversiManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &629574353
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 629574352}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1116413970}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &629574354
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 629574352}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe26d7cadb018ae49991f9b5ba713467, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inRoom: {fileID: 1116413972}
 --- !u!1 &771910781
 GameObject:
   m_ObjectHideFlags: 0
@@ -426,7 +471,8 @@ Transform:
   m_LocalPosition: {x: 928.4637, y: 507.5168, z: -10.132323}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 629574353}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -455,7 +501,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   roomNameText: {fileID: 1677226784}
-  sceneController: {fileID: 0}
+  sceneController: {fileID: 1116413975}
+  onInitRoom:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 629574354}
+        m_TargetAssemblyTypeName: PunReversiManager, Assembly-CSharp
+        m_MethodName: Initialize
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onLeftRoom:
     m_PersistentCalls:
       m_Calls:
@@ -502,12 +563,6 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   onPlayerLeft:
-    m_PersistentCalls:
-      m_Calls: []
-  onPlayerEntered_Player:
-    m_PersistentCalls:
-      m_Calls: []
-  onPlayerLeft_Player:
     m_PersistentCalls:
       m_Calls: []
   onBecomeMasterClient:
