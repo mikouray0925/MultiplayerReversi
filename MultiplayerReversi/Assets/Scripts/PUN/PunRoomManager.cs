@@ -34,13 +34,18 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
         Preparing,
         Playing
     }
+    public State currentState {get; private set;} = State.Preparing;
     public delegate bool Validation();
     public Validation ableToStartGame;
 
     private PhotonView pv;
 
     private void Awake() {
-        pv = GetComponent<PhotonView>();
+        if (TryGetComponent<PhotonView>(out PhotonView _pv)) {
+            pv = _pv;
+        } else {
+            pv = gameObject.AddComponent<PhotonView>();
+        }
     }
 
     private void Start() {
@@ -51,15 +56,27 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
                 isMasterClient = true;
                 onBecomeMasterClient.Invoke();
                 PhotonHashtable propNeedToChange = new PhotonHashtable();
-                propNeedToChange["currentState"] = State.Preparing;
+                propNeedToChange["roomState"] = State.Preparing;
                 ChangeCustomProperties(propNeedToChange);
                 onInitRoom.Invoke();
             } 
             else {
-                if ((State)PhotonNetwork.CurrentRoom.CustomProperties["currentState"] == State.Playing) {
+                if ((State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"] == State.Playing) {
+                    Debug.Log("Enter playing room.");
                     onEnterPlayingRoom.Invoke();
+                } else {
+                    Debug.Log("Enter preparing room.");
                 }
             }
+        }
+    }
+
+    private void Update() {
+        if (PhotonNetwork.InRoom && PhotonNetwork.IsMasterClient) {
+            PhotonHashtable propNeedToChange = new PhotonHashtable();
+            propNeedToChange["masterSceneName"] = SceneManager.GetActiveScene().name;
+            propNeedToChange["roomState"] = currentState;
+            ChangeCustomProperties(propNeedToChange);
         }
     }
 
@@ -110,7 +127,8 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
         if ( ableToStartGame == null ||
             (ableToStartGame != null && ableToStartGame())) {
             PhotonHashtable propNeedToChange = new PhotonHashtable();
-            propNeedToChange["currentState"] = State.Playing;
+            currentState = State.Playing;
+            propNeedToChange["roomState"] = State.Playing;
             ChangeCustomProperties(propNeedToChange);
             onGameStarted.Invoke();
         }

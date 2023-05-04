@@ -12,24 +12,35 @@ public class PunSceneController : MonoBehaviourPunCallbacks
     private PhotonView pv;
 
     private void Awake() {
-        pv = GetComponent<PhotonView>();
+        if (TryGetComponent<PhotonView>(out PhotonView _pv)) {
+            pv = _pv;
+        } else {
+            pv = gameObject.AddComponent<PhotonView>();
+        }
     }
 
     public void UpdateMasterSceneName() {
         if (room.isMasterClient) {
             PhotonHashtable propNeedToChange = new PhotonHashtable();
-            propNeedToChange["masterSceneName"] = SceneManager.GetActiveScene().name;
+            string masterScenename = SceneManager.GetActiveScene().name;
+            propNeedToChange["masterSceneName"] = masterScenename;
             room.ChangeCustomProperties(propNeedToChange);
         }
     }
 
     public void CallChangeSceneToAll(string toSceneName) {
-        pv.RPC("RpcChangeScene", RpcTarget.All, toSceneName);
+        pv.RPC("RpcChangeScene", RpcTarget.All, toSceneName, null);
+    }
+
+    public void CallChangeSceneToAll(string toSceneName, SceneController.Callback onSceneChanged) {
+        pv.RPC("RpcChangeScene", RpcTarget.All, toSceneName, onSceneChanged);
     }
 
     [PunRPC]
-    public void RpcChangeScene(string toSceneName, PhotonMessageInfo msg) {
-        SceneController.instance.ChangeScene(toSceneName, UpdateMasterSceneName);
+    public void RpcChangeScene(string toSceneName, SceneController.Callback onSceneChanged, PhotonMessageInfo msg) {
+        SceneController.Callback callback = UpdateMasterSceneName;
+        if (onSceneChanged != null) callback += onSceneChanged;
+        SceneController.instance.ChangeScene(toSceneName, callback);
     }
 
     public void SyncSceneToMaster() {
@@ -38,6 +49,8 @@ public class PunSceneController : MonoBehaviourPunCallbacks
             if (SceneManager.GetActiveScene().name != masterSceneName) {
                 Debug.Log("Try to change to master scene: " + masterSceneName);
                 SceneController.instance.ChangeScene(masterSceneName);
+            } else {
+                Debug.Log("Already in master scene: " + masterSceneName);
             }
         }   
     }

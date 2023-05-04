@@ -5,13 +5,29 @@ using UnityEngine;
 public class ReversiChess : MonoBehaviour
 {
     public enum State {
-        Unuse,
+        Unused,
         Black,
         White,
-        Flipping
+        FlippingToBlack,
+        FlippingToWhite
     }
 
-    public State currentState {get; private set;} = State.Unuse;
+    public State currentState {get; private set;} = State.Unused;
+
+    public State CurrentState {
+        get {
+            return currentState;
+        }
+        set {
+            gameObject.SetActive(value != State.Unused);
+            if (value == State.Black || value == State.FlippingToBlack) {
+                transform.rotation = Quaternion.identity;
+            }
+            if (value == State.White || value == State.FlippingToWhite) {
+                transform.eulerAngles = new Vector3(180f, 0, 0);
+            }
+        }
+    }
     public string boardIndex {get; private set;} = "";
 
     public string BoardIndex {
