@@ -22,6 +22,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
     // only for master
     bool blackReady = false;
     bool whiteReady = false;
+    bool placeChessAckReceived = false;
 
     PhotonView pv;
 
@@ -67,36 +68,23 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         
         GameState gameState = (GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"];
         if (gameState == GameState.Paused) {
-            if ((int)PhotonNetwork.CurrentRoom.CustomProperties["blackActId"] != -1 &&
-                (int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"] != -1) {
+            if (BlackPlayer != null && WhitePlayer != null) {
                 currentState = GameState.WaitingForAllReady;
             }
-            // Set opponent as opposite side
-            if (PhotonNetwork.CurrentRoom.PlayerCount >= 2) {
-                if ((int)PhotonNetwork.CurrentRoom.CustomProperties["blackActId"] == -1) {
-                    foreach (var kvp in PhotonNetwork.CurrentRoom.Players) {
-                        if (kvp.Value.ActorNumber != (int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"]) {
-                            propNeedToChange["blackActId"] = kvp.Value.ActorNumber;
-                            break;
-                        }
-                    }
-                } 
-                else if ((int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"] == -1) {
-                    foreach (var kvp in PhotonNetwork.CurrentRoom.Players) {
-                        if (kvp.Value.ActorNumber != (int)PhotonNetwork.CurrentRoom.CustomProperties["blackActId"]) {
-                            propNeedToChange["whiteActId"] = kvp.Value.ActorNumber;
-                            break;
-                        }
-                    }
-                }
+            else {
+                FillEmptyPlayer(propNeedToChange);
             }
         }
-        // TODO: if one player left, return to previous game state?
         if (gameState == GameState.WaitingForAllReady) {
-            if ((int)PhotonNetwork.CurrentRoom.CustomProperties["blackActId"] != -1 &&
-                (int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"] != -1 &&
-                blackReady && whiteReady) {
+            if (BlackPlayer != null && blackReady &&
+                WhitePlayer != null && whiteReady) {
                 currentState = GameState.WaitingForOrder;
+                placeChessAckReceived = false;
+            }
+        }
+        if (gameState == GameState.WaitingForOrder) {
+            if (placeChessAckReceived) {
+                // TODO: check if this game is ended. If not end, go back to WaitingForAllReady
             }
         }
 
@@ -112,6 +100,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
 
     private void DoCommonBusiness() {
         GameState gameState = (GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"];
+        reversiManager.currentSide = (ReversiManager.Side)PhotonNetwork.CurrentRoom.CustomProperties["currentSide"];
         if (gameState == GameState.Paused) {
             
         }
@@ -121,6 +110,78 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
             }  
             if (boardDataLoaded && NoChessIsFlipping()) CallMasterSomePlayerIsReady();
         }
+        if (gameState == GameState.WaitingForOrder) {
+            // TODO: Hint player where can be placed.
+        }
+    }
+
+    private void FillEmptyPlayer(PhotonHashtable propNeedToChangeBuffer) {
+        if (PhotonNetwork.CurrentRoom.PlayerCount >= 2) {
+            if ((int)PhotonNetwork.CurrentRoom.CustomProperties["blackActId"] == -1) {
+                foreach (var kvp in PhotonNetwork.CurrentRoom.Players) {
+                    if (kvp.Value.ActorNumber != (int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"]) {
+                        propNeedToChangeBuffer["blackActId"] = kvp.Value.ActorNumber;
+                        break;
+                    }
+                }
+            } 
+            else if ((int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"] == -1) {
+                foreach (var kvp in PhotonNetwork.CurrentRoom.Players) {
+                    if (kvp.Value.ActorNumber != (int)PhotonNetwork.CurrentRoom.CustomProperties["blackActId"]) {
+                        propNeedToChangeBuffer["whiteActId"] = kvp.Value.ActorNumber;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    public bool IsMyTurn() {
+        if ((GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"] == GameState.WaitingForOrder) {
+            if (reversiManager.currentSide == ReversiManager.Side.Black &&
+                BlackPlayer != null && 
+                PhotonNetwork.LocalPlayer.ActorNumber == BlackPlayer.ActorNumber) {
+                return true;
+            }
+            if (reversiManager.currentSide == ReversiManager.Side.White &&
+                WhitePlayer != null && 
+                PhotonNetwork.LocalPlayer.ActorNumber == WhitePlayer.ActorNumber) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void OnChessClicked(string boardIndexToPlace) {
+        if (IsMyTurn()) {
+            // TODO: Check if this place is valid
+            if (false) {
+                SendPlaceChessAckToMaster(boardIndexToPlace);
+            }
+        }
+    }
+
+    private void SendPlaceChessAckToMaster(string boardIndexToPlace) {
+        pv.RPC("RpcReceivePlaceChessAck", RpcTarget.MasterClient, boardIndexToPlace);
+    }
+    [PunRPC]
+    private void RpcReceivePlaceChessAck(string boardIndexToPlace, PhotonMessageInfo info) {
+        // one round can only receive one ack
+        if (!placeChessAckReceived) {
+            // TODO: double check this place is valid if needed
+            // TODO: call everyone to load game data if needed
+            // TODO: check every thing is valid if needed
+            SendPlaceChessOrderToAll(boardIndexToPlace);
+            placeChessAckReceived = true;
+        } 
+    }
+
+    private void SendPlaceChessOrderToAll(string boardIndexToPlace) {
+        pv.RPC("RpcReceivePlaceChessOrder", RpcTarget.All, boardIndexToPlace);
+    }
+    [PunRPC]
+    private void RpcReceivePlaceChessOrder(string boardIndexToPlace, PhotonMessageInfo info) {
+        // TODO: place target chess on the board, then flip the chesses
     }
 
     public void CallMasterUploadGameData() {
@@ -202,6 +263,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         get {
             if (PhotonNetwork.InRoom && roomManager) {
                 int actorId = (int)PhotonNetwork.CurrentRoom.CustomProperties["blackActId"];
+                if (actorId < 1) return null;
                 if (roomManager.players.TryGetValue(actorId, out Player player)) {
                     return player;
                 } else return null;
@@ -213,6 +275,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         get {
             if (PhotonNetwork.InRoom && roomManager) {
                 int actorId = (int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"];
+                if (actorId < 1) return null;
                 if (roomManager.players.TryGetValue(actorId, out Player player)) {
                     return player;
                 } else return null;
