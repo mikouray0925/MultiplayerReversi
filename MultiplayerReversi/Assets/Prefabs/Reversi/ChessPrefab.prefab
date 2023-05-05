@@ -49,6 +49,7 @@ MonoBehaviour:
   stateID: 0
   meshRenderer: {fileID: 4158828667970309143}
   animator: {fileID: 3953840200415161973}
+  model_transform: {fileID: 3025306790092552056}
   hint: {fileID: 5345819957922703107, guid: 78d8ff4e0bb5413418bce420b307be85, type: 3}
 --- !u!95 &3953840200415161973
 Animator:

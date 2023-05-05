@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using System.Text;
 public class ReversiManager : MonoBehaviour
 {
     public Dictionary<string, ReversiChess> chessesOnBoard;
@@ -17,7 +17,9 @@ public class ReversiManager : MonoBehaviour
         new Vector2Int(0, -1), new Vector2Int(-1, -1), new Vector2Int(-1, 0), new Vector2Int(-1, 1)
     };
     public Side currentSide = Side.Black;
-
+    public Side Oppo_side() {
+        return (currentSide == Side.Black) ? Side.White : Side.Black;
+    }
     public delegate void Callback();
     public void SpawnChesses(Highlight.Callback onClickChess = null, Callback onChessesSpawned = null)
     {
@@ -49,7 +51,7 @@ public class ReversiManager : MonoBehaviour
         if (onChessesSpawned != null) onChessesSpawned();
     }
 
-    public Dictionary<string, List<string>> FindLegalMoves()
+    public Dictionary<string, List<string>> FindLegalMoves(Side side)
     {
         legalMoves.Clear();
         for (int row = 1; row <= 8; row++)
@@ -57,16 +59,23 @@ public class ReversiManager : MonoBehaviour
             for (char col = 'A'; col <= 'H'; col++)
             {
                 string boardIndex = row.ToString() + col;
-                if (IsMoveLegal(boardIndex, out List<string> outflanked))
+                if (IsMoveLegal(boardIndex, out List<string> outflanked,side))
                 {
                     legalMoves[boardIndex] = outflanked;
                 }
             }
         }
+        StringBuilder sb;
+        sb = new StringBuilder("Legal moves: ");
+        foreach (string key in legalMoves.Keys)
+        {
+            sb.Append(key + ", ");
+        }
+        Debug.Log(sb.ToString());
         return legalMoves;
     }
 
-    private bool IsMoveLegal(string boardIndex, out List<string> outflanked)
+    private bool IsMoveLegal(string boardIndex, out List<string> outflanked, Side side)
     {
         outflanked = new List<string>();
         if (chessesOnBoard.TryGetValue(boardIndex, out ReversiChess placingChess))
@@ -91,7 +100,7 @@ public class ReversiManager : MonoBehaviour
                                 break;
                             }
                             //If the direction ends at our chess, then it is a legal move, return the list
-                            else if ((int)currentChess.CurrentState == (int)currentSide)
+                            else if ((int)currentChess.CurrentState == (int)side)
                             {
                                 break;
                             }
@@ -147,6 +156,8 @@ public class ReversiManager : MonoBehaviour
                 {
                     StartCoroutine(chessesOnBoard[clampedChess].Flip());
                 }
+                //update chessesOnBoard into new state
+
                 return true;
             }
             else return false;
@@ -161,12 +172,35 @@ public class ReversiManager : MonoBehaviour
 
     public enum GameResult
     {
-        NotYetFinished, BlackWin, WhiteWin
+        NotYetFinished, BlackWin, WhiteWin, Tie
     }
     public GameResult GetGameResult(out Side sideOfNextTurn)
     {
-        // TODO
-        sideOfNextTurn = Side.Black;
+        sideOfNextTurn = Oppo_side();
+        Dictionary<string, List<string>> legalMoves = FindLegalMoves(sideOfNextTurn);
+
+        if(legalMoves.Count == 0)
+        {
+            sideOfNextTurn = currentSide;
+            legalMoves = FindLegalMoves(sideOfNextTurn);
+            if(legalMoves.Count == 0)
+            {
+                int blackCount = 0, whiteCount = 0;
+                foreach(var kvp in chessesOnBoard)
+                {
+                    if (kvp.Value.CurrentState == ReversiChess.State.Black) blackCount++;
+                    else if (kvp.Value.CurrentState == ReversiChess.State.White) whiteCount++;
+                }
+                if (blackCount > whiteCount) return GameResult.BlackWin;
+                else if (blackCount < whiteCount) return GameResult.WhiteWin;
+                else return GameResult.Tie;
+            }
+        }
+        else
+        {
+            sideOfNextTurn = currentSide;
+        }
+
         return GameResult.NotYetFinished;
     }
 }

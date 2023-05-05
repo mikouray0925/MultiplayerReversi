@@ -16,6 +16,7 @@ public class ReversiChess : MonoBehaviour
     public int stateID;
     public MeshRenderer meshRenderer;
     [SerializeField] Animator animator;
+    [SerializeField] Transform model_transform;
     public State CurrentState {
         get {
             return currentState;
@@ -23,10 +24,10 @@ public class ReversiChess : MonoBehaviour
         set {
             meshRenderer.enabled = (value != State.Unused);
             if (value == State.Black) {
-                transform.rotation = Quaternion.identity;
+                model_transform.rotation = Quaternion.identity;
             }
             if (value == State.White) {
-                transform.eulerAngles = new Vector3(180f, 0, 0);
+                model_transform.eulerAngles = new Vector3(180f, 0, 0);
             }
             currentState = value;
             stateID = (int)value;
@@ -80,7 +81,8 @@ public class ReversiChess : MonoBehaviour
         } else if (currentState == State.FlippingToWhite) {
             currentState = State.White;
         }
-        Debug.Log("Flipped " + boardIndex+ "State: " + currentState);
+        Debug.Log("Flipped " + boardIndex + "State: " + currentState);
+        stateID = (int)currentState;
         NoChessIsFlipping = true;
     }
 }

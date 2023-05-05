@@ -6,6 +6,7 @@ using UnityEngine.Events;
 using Photon.Pun;
 using Photon.Realtime;
 using PhotonHashtable = ExitGames.Client.Photon.Hashtable;
+using System.Text;
 
 public class PunReversiManager : MonoBehaviourPunCallbacks
 {
@@ -27,6 +28,8 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
     bool blackReady = false;
     bool whiteReady = false;
     bool placeChessAckReceived = false;
+
+    public bool PrintDebugInfo = false;
 
     PhotonView pv;
 
@@ -73,6 +76,33 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
             if (PhotonNetwork.IsMasterClient) DoMasterOnlyBusiness();
             else DoNonMasterOnlyBusiness();
             DoCommonBusiness();
+        }
+        if(PrintDebugInfo) {
+            //Print whole board
+            StringBuilder sb = new StringBuilder();
+            sb.Append("Board in prop:\n");
+            for (int row = 1; row <= 8; row++)
+            {
+                for (char col = 'A'; col <= 'H'; col++)
+                {
+                    sb.Append((ReversiChess.State)PhotonNetwork.CurrentRoom.CustomProperties[row.ToString() + col]);
+                    sb.Append(" ");
+                }
+                sb.Append("\n");
+            }
+            sb.Append("\n");
+            sb.Append("Board in local:\n");
+            for (int row = 1; row <= 8; row++)
+            {
+                for (char col = 'A'; col <= 'H'; col++)
+                {
+                    sb.Append((ReversiChess.State)reversiManager.chessesOnBoard[row.ToString() + col].CurrentState);
+                    sb.Append(" ");
+                }
+                sb.Append("\n");
+            }
+            Debug.Log(sb.ToString());
+            PrintDebugInfo = false;
         }
     }
 
@@ -157,7 +187,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
             // TODO: Hint player where can be placed.
             if (!isHintSpawned)
             {
-                Dictionary<string, List<string>> LegalMoves = reversiManager.FindLegalMoves();
+                Dictionary<string, List<string>> LegalMoves = reversiManager.FindLegalMoves(reversiManager.currentSide);
                 Debug.Log(LegalMoves);
                 foreach (var kvp in LegalMoves)
                 {
