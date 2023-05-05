@@ -289,7 +289,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 289c47e3e5fbf564f8c57a99b8fac2ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  chessPrefab: {fileID: 8500352662346282121, guid: 8f15ee0e54316d94a843e754817a7139, type: 3}
+  chessPrefab: {fileID: 3571339635651138201, guid: 87470f187bcf7f845ad91fea1f938e8e, type: 3}
   hintPrefab: {fileID: 5215067031098281550, guid: 78d8ff4e0bb5413418bce420b307be85, type: 3}
   slotLength: 1
 --- !u!4 &655540364
@@ -807,6 +807,7 @@ MonoBehaviour:
   boardDataLoaded: 0
   isHintSpawned: 0
   currentState: 0
+  PrintDebugInfo: 0
 --- !u!114 &1116413977
 MonoBehaviour:
   m_ObjectHideFlags: 0

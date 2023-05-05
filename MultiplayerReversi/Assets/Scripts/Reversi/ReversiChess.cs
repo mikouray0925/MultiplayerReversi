@@ -49,18 +49,42 @@ public class ReversiChess : MonoBehaviour
         }
     }
 
-
-
     public Highlight hint;
 
-    public void Place(){
+    public void PlaceWhite(){
+        animator.enabled = true;
         NoChessIsFlipping = false;
-        animator.Play("PlaceChess");
+        animator.Play("PlaceWhite");
+        StartCoroutine("animSleep");
+    }
+    public void PlaceBlack(){
+        animator.enabled = true;
+        NoChessIsFlipping = false;
+        animator.Play("PlaceBlack");
+        StartCoroutine("animSleep");
     }
 
+    public void zeroSecRotate(){
+        if (currentState == State.Black) {
+            //animator.enabled = true;
+            //animator.Play("ZeroSecRotateBlack");
+            //StartCoroutine(animSleep(0.1f).ToString());
+            model_transform.rotation = Quaternion.identity;
+        }
+        if (currentState == State.White) {
+            //animator.enabled = true;
+            //animator.Play("ZeroSecRotateWhite");
+            //StartCoroutine(animSleep(0.1f).ToString());
+            model_transform.rotation = Quaternion.Euler(180f, 0, 0);
+        }
+    }
+    public IEnumerable animSleep(){
+        yield return new WaitForSeconds(0.4f);
+        animator.enabled = false;
+    }
     public IEnumerator Flip() {
         // TODO: flip the chess. remember to update currentState.
-
+        animator.enabled = true;
         WaitForSeconds wait = new WaitForSeconds(0.4f);
         yield return wait;
         Debug.Log("Flipping " + boardIndex+ "State: " + currentState);
@@ -84,5 +108,6 @@ public class ReversiChess : MonoBehaviour
         Debug.Log("Flipped " + boardIndex + "State: " + currentState);
         stateID = (int)currentState;
         NoChessIsFlipping = true;
+        animator.enabled = false;
     }
 }

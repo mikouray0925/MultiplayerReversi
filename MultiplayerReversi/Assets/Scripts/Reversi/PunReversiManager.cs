@@ -80,6 +80,18 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         if(PrintDebugInfo) {
             //Print whole board
             StringBuilder sb = new StringBuilder();
+
+            sb = sb.Append("Debug Message: \n");
+            sb = sb.Append("PhotonNetwork.InRoom: ").Append(PhotonNetwork.InRoom).Append("\n");
+            sb = sb.Append("PhotonNetwork.IsMasterClient: ").Append(PhotonNetwork.IsMasterClient).Append("\n");
+            sb = sb.Append("PhotonNetwork.CurrentRoom.MasterClientId: ").Append(PhotonNetwork.CurrentRoom.MasterClientId).Append("\n");
+            sb = sb.Append("PhotonNetwork.CurrentRoom: ").Append(PhotonNetwork.CurrentRoom).Append("\n");
+            sb = sb.Append("PhotonNetwork.CurrentRoom.CustomProperties: ").Append(PhotonNetwork.CurrentRoom.CustomProperties).Append("\n");
+            sb = sb.Append("PhotonNetwork.CurrentRoom.Name: ").Append(PhotonNetwork.CurrentRoom.Name).Append("\n");
+            sb = sb.Append("PhotonNetwork.CurrentRoom.PlayerCount: ").Append(PhotonNetwork.CurrentRoom.PlayerCount).Append("\n");
+            sb = sb.Append("PhotonNetwork.CurrentRoom.MaxPlayers: ").Append(PhotonNetwork.CurrentRoom.MaxPlayers).Append("\n");
+            sb = sb.Append("PhotonNetwork.CurrentRoom.IsOpen: ").Append(PhotonNetwork.CurrentRoom.IsOpen).Append("\n");
+            sb = sb.Append("\nBoard: \n");
             sb.Append("Board in prop:\n");
             for (int row = 1; row <= 8; row++)
             {
@@ -101,6 +113,21 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
                 }
                 sb.Append("\n");
             }
+            sb = sb.Append("\nStates: \n");
+            sb.Append("\n").Append("CurrentSide: ").Append(reversiManager.currentSide).Append("\n");
+            sb.Append("BlackPlayer: ").Append(BlackPlayer).Append("\n");
+            sb.Append("WhitePlayer: ").Append(WhitePlayer).Append("\n");
+            //get this client's side
+            sb.Append("MySide: ").Append(PhotonNetwork.LocalPlayer).Append("\n");
+            sb = sb.Append("Room State: ").Append((PunRoomManager.State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"]).Append("\n");
+            sb = sb.Append("Game State: ").Append((GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"]).Append("\n");
+            sb = sb.Append("Black Ready: ").Append(blackReady).Append("\n");
+            sb = sb.Append("White Ready: ").Append(whiteReady).Append("\n");
+
+            sb = sb.Append("Place Chess Ack Received: ").Append(placeChessAckReceived).Append("\n");
+            sb = sb.Append("Self Ready: ").Append(selfReady).Append("\n");
+            sb = sb.Append("No Chess is Flipping").Append(reversiManager.NoChessIsFlipping()).Append("\n");
+            //reversiManager.syncBoardwithLocalData();
             Debug.Log(sb.ToString());
             PrintDebugInfo = false;
         }
@@ -133,8 +160,11 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         }
         if (gameState == GameState.WaitingForOrder)
         {
-            if (placeChessAckReceived)
+            blackReady = false;
+            whiteReady = false;
+            if (placeChessAckReceived && reversiManager.NoChessIsFlipping())
             {
+                CallMasterUploadGameData();
                 ReversiManager.GameResult gameResult = reversiManager.GetGameResult(out ReversiManager.Side sideOfNextRound);
                 if (gameResult == ReversiManager.GameResult.BlackWin)
                 {
@@ -149,8 +179,6 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
                 else
                 {
                     reversiManager.currentSide = sideOfNextRound;
-                    blackReady = false;
-                    whiteReady = false;
                     currentState = GameState.WaitingForAllReady;
                 }
             }
@@ -187,6 +215,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         if (gameState == GameState.WaitingForOrder)
         {
             // TODO: Hint player where can be placed.
+            selfReady = false;
             if (!isHintSpawned)
             {
                 Dictionary<string, List<string>> LegalMoves = reversiManager.FindLegalMoves(reversiManager.currentSide);
@@ -295,8 +324,8 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
             // TODO: call everyone to load game data if needed
             // TODO: check every thing is valid if needed
             // TODO: place the chess
-            Debug.Log("Sending Place Chess Order to all");
             SendPlaceChessOrderToOther(boardIndexToPlace);
+            Debug.Log("Sending Place Chess Order to all");
             placeChessAckReceived = true;
         }
     }
@@ -309,7 +338,9 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
     private void RpcReceivePlaceChessOrder(string boardIndexToPlace, PhotonMessageInfo info)
     {
         // TODO
-        //reversiManager.PlaceChess(boardIndexToPlace);
+        if(reversiManager.chessesOnBoard[boardIndexToPlace].currentState == ReversiChess.State.Unused){
+            reversiManager.PlaceChess(boardIndexToPlace);
+        }
     }
 
     public void CallMasterUploadGameData()
@@ -350,12 +381,12 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         if (BlackPlayer != null && BlackPlayer.ActorNumber == info.Sender.ActorNumber)
         {
             blackReady = true;
-            Debug.Log("Recieved black ready RPC");
+            Debug.Log("Recieved black ready RPC, Current state in prop: " + (GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"] + " time:" + PhotonNetwork.Time);
         }
         if (WhitePlayer != null && WhitePlayer.ActorNumber == info.Sender.ActorNumber)
         {
             whiteReady = true;
-            Debug.Log("Recieved white ready RPC");
+            Debug.Log("Recieved white ready RPC, Current state in prop: " + (GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"] + " time:" + PhotonNetwork.Time);
         }
     }
 
@@ -383,7 +414,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         }
         boardDataLoaded = true;
         Debug.Log("Board data loaded");
-
+        reversiManager.syncBoardwithLocalData();
         isLoadingBoardData = false;
     }
 

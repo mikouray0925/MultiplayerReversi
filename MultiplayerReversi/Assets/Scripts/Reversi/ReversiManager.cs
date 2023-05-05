@@ -47,8 +47,16 @@ public class ReversiManager : MonoBehaviour
         }
 
         Debug.Log("Chesses spawned");
+        syncBoardwithLocalData();
         isSpawningChesses = false;
         if (onChessesSpawned != null) onChessesSpawned();
+    }
+
+    public void syncBoardwithLocalData(){
+        foreach (var kvp in chessesOnBoard)
+        {
+            kvp.Value.zeroSecRotate();
+        }
     }
 
     public Dictionary<string, List<string>> FindLegalMoves(Side side)
@@ -136,12 +144,12 @@ public class ReversiManager : MonoBehaviour
             if (currentSide == Side.Black)
             {
                 placingChess.CurrentState = ReversiChess.State.Black;
-                placingChess.Place();
+                placingChess.PlaceBlack();
             }
             else
             {
                 placingChess.CurrentState = ReversiChess.State.White;
-                placingChess.Place();
+                placingChess.PlaceWhite();
             }
             //hide all highlights
             foreach (var kvp in chessesOnBoard)
