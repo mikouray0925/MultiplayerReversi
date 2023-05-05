@@ -10,21 +10,14 @@ using PhotonHashtable = ExitGames.Client.Photon.Hashtable;
 public class PunReversiManager : MonoBehaviourPunCallbacks
 {
     public PunRoomManager roomManager;
-    public PunSceneController sceneController;
-    public string gameSceneName;
-    public Dictionary<string, ReversiChess> chessesOnBoard;
-    private bool isSpawningChesses;
+    public ReversiManager reversiManager;
     private bool isLoadingBoardData;
     private bool boardDataLoaded;
 
     public enum GameState {
         Paused, WaitingForAllReady, WaitingForOrder, End
     }
-    public GameState currentState {get; private set;} = GameState.Paused;
-
-    public enum Side {
-        Black, White
-    }
+    public GameState currentState = GameState.Paused;
 
     // only for master
     bool blackReady = false;
@@ -38,12 +31,15 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         } else {
             pv = gameObject.AddComponent<PhotonView>();
         }
+        roomManager = GetComponent<PunRoomManager>();
+        reversiManager = GetComponent<ReversiManager>();
     }
 
     public void Initialize() {
         PhotonHashtable propNeedToChange = new PhotonHashtable();
         propNeedToChange["gameState"] = GameState.Paused;
-        propNeedToChange["currentSide"] = Side.Black;
+        reversiManager.currentSide = ReversiManager.Side.Black;
+        propNeedToChange["currentSide"] = reversiManager.currentSide;
         propNeedToChange["blackActId"] = PhotonNetwork.LocalPlayer.ActorNumber;
         propNeedToChange["whiteActId"] = -1;
         propNeedToChange["lastUploadGameDataTime"] = -1.0;
@@ -53,19 +49,20 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
                 propNeedToChange[row.ToString() + col] = ReversiChess.State.Unused;
             }
         }
-        roomManager = GetComponent<PunRoomManager>();
+        
         roomManager.ChangeCustomProperties(propNeedToChange);
     }
 
     private void Update() {
         if (PhotonNetwork.InRoom && roomManager != null &&
             (PunRoomManager.State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"] == PunRoomManager.State.Playing) {
-            if (PhotonNetwork.IsMasterClient) DoMasterClientPlayBusiness();
-            DoClientPlayBusiness();
+            if (PhotonNetwork.IsMasterClient) DoMasterOnlyBusiness();
+            else DoNonMasterOnlyBusiness();
+            DoCommonBusiness();
         }
     }
 
-    private void DoMasterClientPlayBusiness() {
+    private void DoMasterOnlyBusiness() {
         PhotonHashtable propNeedToChange = new PhotonHashtable();
         
         GameState gameState = (GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"];
@@ -104,18 +101,23 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         }
 
         propNeedToChange["gameState"] = currentState;
+        propNeedToChange["currentSide"] = reversiManager.currentSide;
         roomManager.ChangeCustomProperties(propNeedToChange);
         CallMasterUploadGameData();
     }
 
-    private void DoClientPlayBusiness() {
+    private void DoNonMasterOnlyBusiness() {
+
+    }
+
+    private void DoCommonBusiness() {
         GameState gameState = (GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"];
         if (gameState == GameState.Paused) {
             
         }
         if (gameState == GameState.WaitingForAllReady) {
-            if (chessesOnBoard == null && !SceneController.instance.isChangingScene) {
-                SpawnChesses(LoadBoardData);
+            if (reversiManager.chessesOnBoard == null) {
+                reversiManager.SpawnChesses(LoadChessesData);
             }  
             if (boardDataLoaded && NoChessIsFlipping()) CallMasterSomePlayerIsReady();
         }
@@ -128,11 +130,11 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
     private void RpcUploadGameData(PhotonMessageInfo info) {
         if (PhotonNetwork.InRoom && roomManager) {
             PhotonHashtable propNeedToChange = new PhotonHashtable();
-            if (chessesOnBoard != null) {
+            if (reversiManager.chessesOnBoard != null) {
                 for (int row = 1; row <= 8; row++) {
                     for (char col = 'A'; col <= 'H'; col++) {
                         string boardIndex = row.ToString() + col;
-                        propNeedToChange[boardIndex] = chessesOnBoard[boardIndex].currentState;
+                        propNeedToChange[boardIndex] = reversiManager.chessesOnBoard[boardIndex].currentState;
                     }
                 }
 
@@ -155,35 +157,10 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         }
     }
 
-    public delegate void Callback();
-    private void SpawnChesses(Callback onChessesSpawned = null) {
-        StartCoroutine(SpawnChessesCoroutine(onChessesSpawned));
+    private void LoadChessesData() {
+        StartCoroutine(LoadChessesDataCoroutine());
     }
-    IEnumerator SpawnChessesCoroutine(Callback onChessesSpawned = null) {
-        if (isSpawningChesses) yield break;
-        isSpawningChesses = true;
-        
-        while (true) {
-            ReversiChessSpawner spawner = FindObjectOfType<ReversiChessSpawner>();
-            if (spawner) {
-                chessesOnBoard = spawner.SpawnChesses();
-                if (chessesOnBoard != null) break;
-                else Debug.LogError("Chess spawner cannot spawn chess.");
-            } else {
-                Debug.Log("Not yet find ChessSpawner");
-            }
-            yield return new WaitForSeconds(0.1f);
-        }
-
-        Debug.Log("Chesses spawned");
-        isSpawningChesses = false;
-        if (onChessesSpawned != null) onChessesSpawned();
-    }
-
-    private void LoadBoardData() {
-        StartCoroutine(LoadBoardDataCoroutine());
-    }
-    IEnumerator LoadBoardDataCoroutine() {
+    IEnumerator LoadChessesDataCoroutine() {
         if (isLoadingBoardData) yield break;
         isLoadingBoardData = true;
 
@@ -195,7 +172,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
             yield return new WaitForSeconds(0.1f);
         } 
 
-        foreach (var kvp in chessesOnBoard) {
+        foreach (var kvp in reversiManager.chessesOnBoard) {
             kvp.Value.CurrentState = (ReversiChess.State)PhotonNetwork.CurrentRoom.CustomProperties[kvp.Value.BoardIndex];
         }
         boardDataLoaded = true;
@@ -205,14 +182,14 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
     }
 
     public void StartGame() {
-        SpawnChesses(InitGame);
+        reversiManager.SpawnChesses(InitGame);
     }
 
     private void InitGame() {
-        chessesOnBoard["4D"].CurrentState = ReversiChess.State.White;
-        chessesOnBoard["4E"].CurrentState = ReversiChess.State.Black;
-        chessesOnBoard["5D"].CurrentState = ReversiChess.State.Black;
-        chessesOnBoard["5E"].CurrentState = ReversiChess.State.White;
+        reversiManager.chessesOnBoard["4D"].CurrentState = ReversiChess.State.White;
+        reversiManager.chessesOnBoard["4E"].CurrentState = ReversiChess.State.Black;
+        reversiManager.chessesOnBoard["5D"].CurrentState = ReversiChess.State.Black;
+        reversiManager.chessesOnBoard["5E"].CurrentState = ReversiChess.State.White;
         boardDataLoaded = true;
         CallMasterUploadGameData();
     }

@@ -503,6 +503,7 @@ GameObject:
   - component: {fileID: 1116413972}
   - component: {fileID: 1116413975}
   - component: {fileID: 1116413976}
+  - component: {fileID: 1116413978}
   - component: {fileID: 1116413973}
   - component: {fileID: 1116413971}
   - component: {fileID: 1116413977}
@@ -662,9 +663,6 @@ MonoBehaviour:
         m_CallState: 2
   onMasterStartGame:
     m_PersistentCalls:
-      m_Calls: []
-  onGameStarted:
-    m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1116413976}
         m_TargetAssemblyTypeName: PunReversiManager, Assembly-CSharp
@@ -678,6 +676,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  onGameStarted:
+    m_PersistentCalls:
+      m_Calls:
       - m_Target: {fileID: 1723609083}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -769,9 +770,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe26d7cadb018ae49991f9b5ba713467, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  roomManager: {fileID: 0}
-  sceneController: {fileID: 1116413975}
-  gameSceneName: Game
+  roomManager: {fileID: 1116413972}
+  reversiManager: {fileID: 1116413978}
+  currentState: 0
 --- !u!114 &1116413977
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -794,6 +795,19 @@ MonoBehaviour:
   sceneViewId: 1
   InstantiationId: 0
   isRuntimeInstantiated: 0
+--- !u!114 &1116413978
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1116413969}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 198cccfc24ae5d44bbe9f9cffa6ba682, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentSide: 0
 --- !u!1 &1127722109
 GameObject:
   m_ObjectHideFlags: 0
