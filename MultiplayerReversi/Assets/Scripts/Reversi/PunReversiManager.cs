@@ -149,6 +149,8 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
                 else
                 {
                     reversiManager.currentSide = sideOfNextRound;
+                    blackReady = false;
+                    whiteReady = false;
                     currentState = GameState.WaitingForAllReady;
                 }
             }
@@ -292,15 +294,16 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
             // TODO: double check this place is valid if needed
             // TODO: call everyone to load game data if needed
             // TODO: check every thing is valid if needed
+            // TODO: place the chess
             Debug.Log("Sending Place Chess Order to all");
-            SendPlaceChessOrderToAll(boardIndexToPlace);
+            SendPlaceChessOrderToOther(boardIndexToPlace);
             placeChessAckReceived = true;
         }
     }
 
-    private void SendPlaceChessOrderToAll(string boardIndexToPlace)
+    private void SendPlaceChessOrderToOther(string boardIndexToPlace)
     {
-        pv.RPC("RpcReceivePlaceChessOrder", RpcTarget.All, boardIndexToPlace);
+        pv.RPC("RpcReceivePlaceChessOrder", RpcTarget.Others, boardIndexToPlace);
     }
     [PunRPC]
     private void RpcReceivePlaceChessOrder(string boardIndexToPlace, PhotonMessageInfo info)
