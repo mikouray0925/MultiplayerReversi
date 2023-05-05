@@ -39,6 +39,9 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
         Preparing,
         Playing
     }
+    public enum GameState {
+        Paused, WaitingForAllReady, WaitingForOrder, End
+    }
     public State currentState {get; private set;} = State.Preparing;
     public delegate bool Validation();
     public Validation ableToStartGame;
@@ -106,8 +109,8 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
             sb = sb.Append("\nUser and States: \n");
             sb = sb.Append("Black Actor ID: ").Append((int)PhotonNetwork.CurrentRoom.CustomProperties["blackActId"]).Append("\n");
             sb = sb.Append("White Actor ID: ").Append((int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"]).Append("\n");
-            sb = sb.Append("Room State: ").Append((State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"]).Append("\n");;
-            sb = sb.Append("Game State: ").Append((State)PhotonNetwork.CurrentRoom.CustomProperties["gameState"]);
+            sb = sb.Append("Room State: ").Append((State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"]).Append("\n");
+            sb = sb.Append("Game State: ").Append((GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"]).Append("\n");;
             Debug.Log(sb.ToString());
             PrintDebugMsg = false;
         }
