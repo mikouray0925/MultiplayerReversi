@@ -44,4 +44,15 @@ public class ReversiChess : MonoBehaviour
             }
         }
     }
+
+    public delegate void Callback(string index);
+    public Callback onClicked;
+
+    private void Update() {
+        // TODO: check player click
+    }
+
+    public void Flip() {
+        // TODO: flip the chess. remember to update currentState.
+    }
 }

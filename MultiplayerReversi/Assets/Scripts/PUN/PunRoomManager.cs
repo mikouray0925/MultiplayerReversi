@@ -78,7 +78,7 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
         }
     }
 
-    private void Update() {
+    private void FixedUpdate() {
         if (PhotonNetwork.InRoom && PhotonNetwork.IsMasterClient) {
             if (PhotonNetwork.IsMasterClient) {
                 PhotonHashtable propNeedToChange = new PhotonHashtable();

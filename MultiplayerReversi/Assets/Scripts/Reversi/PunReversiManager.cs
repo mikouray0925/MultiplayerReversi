@@ -54,7 +54,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         roomManager.ChangeCustomProperties(propNeedToChange);
     }
 
-    private void Update() {
+    private void FixedUpdate() {
         if (PhotonNetwork.InRoom && roomManager != null &&
             (PunRoomManager.State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"] == PunRoomManager.State.Playing) {
             if (PhotonNetwork.IsMasterClient) DoMasterOnlyBusiness();
@@ -84,7 +84,19 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         }
         if (gameState == GameState.WaitingForOrder) {
             if (placeChessAckReceived) {
-                // TODO: check if this game is ended. If not end, go back to WaitingForAllReady
+                ReversiManager.GameResult gameResult = reversiManager.GetGameResult(out ReversiManager.Side sideOfNextRound);
+                if (gameResult == ReversiManager.GameResult.BlackWin) {
+                    // TODO
+                    currentState = GameState.End;
+                } 
+                else if (gameResult == ReversiManager.GameResult.WhiteWin) {
+                    // TODO
+                    currentState = GameState.End;
+                }
+                else {
+                    reversiManager.currentSide = sideOfNextRound;
+                    currentState = GameState.WaitingForAllReady;
+                }
             }
         }
 
@@ -106,9 +118,9 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         }
         if (gameState == GameState.WaitingForAllReady) {
             if (reversiManager.chessesOnBoard == null) {
-                reversiManager.SpawnChesses(LoadChessesData);
+                reversiManager.SpawnChesses(OnChessClicked, LoadChessesData);
             }  
-            if (boardDataLoaded && NoChessIsFlipping()) CallMasterSomePlayerIsReady();
+            if (boardDataLoaded && reversiManager.NoChessIsFlipping()) CallMasterSomePlayerIsReady();
         }
         if (gameState == GameState.WaitingForOrder) {
             // TODO: Hint player where can be placed.
@@ -154,8 +166,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
 
     private void OnChessClicked(string boardIndexToPlace) {
         if (IsMyTurn()) {
-            // TODO: Check if this place is valid
-            if (false) {
+            if (reversiManager.IsValidPlacingIndex(boardIndexToPlace)) {
                 SendPlaceChessAckToMaster(boardIndexToPlace);
             }
         }
@@ -181,7 +192,8 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
     }
     [PunRPC]
     private void RpcReceivePlaceChessOrder(string boardIndexToPlace, PhotonMessageInfo info) {
-        // TODO: place target chess on the board, then flip the chesses
+        // TODO
+        // reversiManager.PlaceChess(boardIndexToPlace);
     }
 
     public void CallMasterUploadGameData() {
@@ -243,7 +255,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
     }
 
     public void StartGame() {
-        reversiManager.SpawnChesses(InitGame);
+        reversiManager.SpawnChesses(OnChessClicked, InitGame);
     }
 
     private void InitGame() {
@@ -253,10 +265,6 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         reversiManager.chessesOnBoard["5E"].CurrentState = ReversiChess.State.White;
         boardDataLoaded = true;
         CallMasterUploadGameData();
-    }
-
-    public bool NoChessIsFlipping() {
-        return true;
     }
 
     public Player BlackPlayer {
