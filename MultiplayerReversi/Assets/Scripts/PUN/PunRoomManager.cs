@@ -28,6 +28,7 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
     public UnityEvent onPlayerLeft;
     public UnityEvent onBecomeMasterClient;
     public UnityEvent onNoLongerMasterClient;
+    public UnityEvent onMasterStartGame;
     public UnityEvent onGameStarted;
     public UnityEvent onEnterPlayingRoom;
 
@@ -65,11 +66,13 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
                 onInitRoom.Invoke();
             } 
             else {
-                if ((State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"] == State.Playing) {
+                currentState = (State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"];
+                if (currentState == State.Preparing) {
+                    Debug.Log("Enter preparing room.");
+                } 
+                else if (currentState == State.Playing) {
                     Debug.Log("Enter playing room.");
                     onEnterPlayingRoom.Invoke();
-                } else {
-                    Debug.Log("Enter preparing room.");
                 }
             }
         }
@@ -77,10 +80,16 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
 
     private void Update() {
         if (PhotonNetwork.InRoom && PhotonNetwork.IsMasterClient) {
-            PhotonHashtable propNeedToChange = new PhotonHashtable();
-            propNeedToChange["masterSceneName"] = SceneManager.GetActiveScene().name;
-            propNeedToChange["roomState"] = currentState;
-            ChangeCustomProperties(propNeedToChange);
+            if (PhotonNetwork.IsMasterClient) {
+                PhotonHashtable propNeedToChange = new PhotonHashtable();
+                propNeedToChange["masterSceneName"] = SceneManager.GetActiveScene().name;
+                propNeedToChange["roomState"] = currentState;
+                ChangeCustomProperties(propNeedToChange);
+            } 
+            else {
+                currentState = (State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"];
+            }
+            
         }
         if(PrintDebugMsg){
             StringBuilder sb = new StringBuilder();
@@ -147,15 +156,23 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
         onLeftRoom.Invoke();
     }
 
-    public void StartGame() {
+    public void CallStartGameToAll() {
+        if (!PhotonNetwork.IsMasterClient) return;
         if ( ableToStartGame == null ||
             (ableToStartGame != null && ableToStartGame())) {
             PhotonHashtable propNeedToChange = new PhotonHashtable();
             currentState = State.Playing;
             propNeedToChange["roomState"] = State.Playing;
             ChangeCustomProperties(propNeedToChange);
-            onGameStarted.Invoke();
+            pv.RPC("RpcStartGame", RpcTarget.All);
+            onMasterStartGame.Invoke();
         }
+    }
+
+    [PunRPC]
+    private void RpcStartGame(PhotonMessageInfo info) {
+        currentState = State.Playing;
+        onGameStarted.Invoke();
     }
 
     public void ChangeCustomProperties(PhotonHashtable propertiesNeedToChange) {

@@ -660,6 +660,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  onMasterStartGame:
+    m_PersistentCalls:
+      m_Calls: []
   onGameStarted:
     m_PersistentCalls:
       m_Calls:
@@ -992,7 +995,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1116413972}
         m_TargetAssemblyTypeName: PunRoomManager, Assembly-CSharp
-        m_MethodName: StartGame
+        m_MethodName: CallStartGameToAll
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1057,7 +1060,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c07862abaf9595a46a15050c2142a8e9, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.4
+      value: 1.011
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c07862abaf9595a46a15050c2142a8e9, type: 3}
       propertyPath: m_LocalPosition.z
