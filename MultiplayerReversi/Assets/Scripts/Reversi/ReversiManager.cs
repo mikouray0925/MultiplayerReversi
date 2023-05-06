@@ -5,8 +5,9 @@ using System.Text;
 public class ReversiManager : MonoBehaviour
 {
     public Dictionary<string, ReversiChess> chessesOnBoard;
-    public Dictionary<string, List<string>> legalMoves = new Dictionary<string, List<string>>();
     public bool isSpawningChesses { get; private set; }
+
+    public Dictionary<string, List<string>> lastFoundLegalMoves = new Dictionary<string, List<string>>();
 
     public enum Side
     {
@@ -17,7 +18,7 @@ public class ReversiManager : MonoBehaviour
         new Vector2Int(0, -1), new Vector2Int(-1, -1), new Vector2Int(-1, 0), new Vector2Int(-1, 1)
     };
     public Side currentSide = Side.Black;
-    public Side Oppo_side() {
+    public Side GetOppoSide() {
         return (currentSide == Side.Black) ? Side.White : Side.Black;
     }
     public delegate void Callback();
@@ -60,32 +61,32 @@ public class ReversiManager : MonoBehaviour
 
     public Dictionary<string, List<string>> FindLegalMoves(Side side)
     {
-        legalMoves.Clear();
+        lastFoundLegalMoves.Clear();
         for (int row = 1; row <= 8; row++)
         {
             for (char col = 'A'; col <= 'H'; col++)
             {
                 string boardIndex = row.ToString() + col;
                 chessesOnBoard[boardIndex].hint.gameObject.SetActive(false);
-                if (IsMoveLegal(boardIndex, out List<string> outflanked,side))
+                if (IsMoveLegal(boardIndex, side, out List<string> flanked))
                 {
-                    legalMoves[boardIndex] = outflanked;
+                    lastFoundLegalMoves[boardIndex] = flanked;
                 }
             }
         }
         StringBuilder sb;
         sb = new StringBuilder("Legal moves: ");
-        foreach (string key in legalMoves.Keys)
+        foreach (string key in lastFoundLegalMoves.Keys)
         {
             sb.Append(key + ", ");
         }
         Debug.Log(sb.ToString());
-        return legalMoves;
+        return lastFoundLegalMoves;
     }
 
-    private bool IsMoveLegal(string boardIndex, out List<string> outflanked, Side side)
+    private bool IsMoveLegal(string boardIndex, Side side, out List<string> flanked)
     {
-        outflanked = new List<string>();
+        flanked = new List<string>();
         if (chessesOnBoard.TryGetValue(boardIndex, out ReversiChess placingChess))
         {
             if (placingChess.CurrentState != ReversiChess.State.Unused) return false;
@@ -124,10 +125,10 @@ public class ReversiManager : MonoBehaviour
                             break;
                         }
                     }
-                    outflanked.AddRange(outflankedInThisDir);
+                    flanked.AddRange(outflankedInThisDir);
                 }
                 //Debug.Log("Legal moves for " + boardIndex + ": " + outflanked.Count);
-                return outflanked.Count > 0;
+                return flanked.Count > 0;
             }
         }
         else return false;
@@ -135,7 +136,7 @@ public class ReversiManager : MonoBehaviour
 
     public bool IsValidPlacingIndex(string placingIndex)
     {
-        return legalMoves.ContainsKey(placingIndex);
+        return lastFoundLegalMoves.ContainsKey(placingIndex);
     }
     public bool PlaceChess(string placingIndex)
     {
@@ -157,7 +158,7 @@ public class ReversiManager : MonoBehaviour
             {
                 kvp.Value.hint.gameObject.SetActive(false);
             }
-            List<string> clampedChesses = legalMoves[placingIndex];
+            List<string> clampedChesses = lastFoundLegalMoves[placingIndex];
             Debug.Log("Clamped chesses: " + clampedChesses.Count);
             if (clampedChesses.Count > 0)
             {
@@ -185,7 +186,7 @@ public class ReversiManager : MonoBehaviour
     }
     public GameResult GetGameResult(out Side sideOfNextTurn)
     {
-        sideOfNextTurn = Oppo_side();
+        sideOfNextTurn = GetOppoSide();
         Dictionary<string, List<string>> legalMoves = FindLegalMoves(sideOfNextTurn);
 
         if(legalMoves.Count == 0)
@@ -208,7 +209,7 @@ public class ReversiManager : MonoBehaviour
         }
         else
         {
-            sideOfNextTurn = Oppo_side();
+            sideOfNextTurn = GetOppoSide();
         }
 
         return GameResult.NotYetFinished;
