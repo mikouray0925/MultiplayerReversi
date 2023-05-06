@@ -289,16 +289,24 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
     {
         if ((GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"] == GameState.WaitingForOrder)
         {
+            if (reversiManager.currentSide == ReversiManager.Side.Black) {
+                Debug.Log("It's black round.");
+            }
+            else {
+                Debug.Log("It's white round.");
+            }
             if (reversiManager.currentSide == ReversiManager.Side.Black &&
                 BlackPlayer != null &&
                 PhotonNetwork.LocalPlayer.ActorNumber == BlackPlayer.ActorNumber)
             {
+                Debug.Log("It's my round.");
                 return true;
             }
             if (reversiManager.currentSide == ReversiManager.Side.White &&
                 WhitePlayer != null &&
                 PhotonNetwork.LocalPlayer.ActorNumber == WhitePlayer.ActorNumber)
             {
+                Debug.Log("It's my round.");
                 return true;
             }
         }
@@ -307,7 +315,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
 
     private void OnChessClicked(string boardIndexToPlace)
     {
-        SendPlaceChessAckToMaster(boardIndexToPlace);
+        if (IsMyTurn()) SendPlaceChessAckToMaster(boardIndexToPlace);
     }
 
     private void SendPlaceChessAckToMaster(string boardIndexToPlace)
