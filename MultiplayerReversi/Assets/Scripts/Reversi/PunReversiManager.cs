@@ -179,6 +179,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
                 else
                 {
                     reversiManager.currentSide = sideOfNextRound;
+                    Debug.Log("Change to side: " + reversiManager.currentSide);
                     currentState = GameState.WaitingForAllReady;
                 }
             }
@@ -192,27 +193,27 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
 
     private void DoNonMasterOnlyBusiness()
     {
-
+        currentState = (GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"];
+        reversiManager.currentSide = (ReversiManager.Side)PhotonNetwork.CurrentRoom.CustomProperties["currentSide"];
     }
 
     private void DoCommonBusiness()
     {
-        GameState gameState = (GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"];
-        reversiManager.currentSide = (ReversiManager.Side)PhotonNetwork.CurrentRoom.CustomProperties["currentSide"];
-        if (gameState == GameState.Paused)
+        //ReversiManager.Side currentSide = (ReversiManager.Side)PhotonNetwork.CurrentRoom.CustomProperties["currentSide"];
+        if (currentState == GameState.Paused)
         {
 
         }
-        if (gameState == GameState.WaitingForAllReady)
+        if (currentState == GameState.WaitingForAllReady)
         {
             if (reversiManager.chessesOnBoard == null)
             {
                 reversiManager.SpawnChesses(OnChessClicked, LoadChessesData);
             }
-            if (boardDataLoaded && reversiManager.NoChessIsFlipping() && !selfReady) CallMasterSomePlayerIsReady();
+            if (boardDataLoaded && reversiManager.NoChessIsFlipping()) CallMasterSomePlayerIsReady();
             if (isHintSpawned) isHintSpawned = false;
         }
-        if (gameState == GameState.WaitingForOrder)
+        if (currentState == GameState.WaitingForOrder)
         {
             // TODO: Hint player where can be placed.
             selfReady = false;
@@ -381,12 +382,12 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         if (BlackPlayer != null && BlackPlayer.ActorNumber == info.Sender.ActorNumber)
         {
             blackReady = true;
-            Debug.Log("Recieved black ready RPC, Current state in prop: " + (GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"] + " time:" + PhotonNetwork.Time);
+            // Debug.Log("Recieved black ready RPC, Current state in prop: " + (GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"] + " time:" + PhotonNetwork.Time);
         }
         if (WhitePlayer != null && WhitePlayer.ActorNumber == info.Sender.ActorNumber)
         {
             whiteReady = true;
-            Debug.Log("Recieved white ready RPC, Current state in prop: " + (GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"] + " time:" + PhotonNetwork.Time);
+            // Debug.Log("Recieved white ready RPC, Current state in prop: " + (GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"] + " time:" + PhotonNetwork.Time);
         }
     }
 
