@@ -47,7 +47,6 @@ public class ReversiManager : MonoBehaviour
         }
 
         Debug.Log("Chesses spawned");
-        syncBoardwithLocalData();
         isSpawningChesses = false;
         if (onChessesSpawned != null) onChessesSpawned();
     }
@@ -141,6 +140,7 @@ public class ReversiManager : MonoBehaviour
     {
         if (chessesOnBoard.TryGetValue(placingIndex, out ReversiChess placingChess))
         {
+            placingChess.meshRenderer.enabled = true;
             if (currentSide == Side.Black)
             {
                 placingChess.CurrentState = ReversiChess.State.Black;
@@ -189,6 +189,7 @@ public class ReversiManager : MonoBehaviour
 
         if(legalMoves.Count == 0)
         {
+
             sideOfNextTurn = currentSide;
             legalMoves = FindLegalMoves(sideOfNextTurn);
             if(legalMoves.Count == 0)
@@ -206,7 +207,7 @@ public class ReversiManager : MonoBehaviour
         }
         else
         {
-            sideOfNextTurn = currentSide;
+            sideOfNextTurn = Oppo_side();
         }
 
         return GameResult.NotYetFinished;

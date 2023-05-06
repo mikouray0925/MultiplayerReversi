@@ -23,14 +23,13 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
     }
     public GameState currentState = GameState.Paused;
 
-    bool selfReady = false;
+    public bool selfReady = false;
     // only for master
-    bool blackReady = false;
-    bool whiteReady = false;
-    bool placeChessAckReceived = false;
+    public bool blackReady = false;
+    public bool whiteReady = false;
+    public bool placeChessAckReceived = false;
 
-    public bool PrintDebugInfo = false;
-
+    public bool CheckedGameResult = false;
     PhotonView pv;
 
     private void Awake()
@@ -77,60 +76,6 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
             else DoNonMasterOnlyBusiness();
             DoCommonBusiness();
         }
-        if(PrintDebugInfo) {
-            //Print whole board
-            StringBuilder sb = new StringBuilder();
-
-            sb = sb.Append("Debug Message: \n");
-            sb = sb.Append("PhotonNetwork.InRoom: ").Append(PhotonNetwork.InRoom).Append("\n");
-            sb = sb.Append("PhotonNetwork.IsMasterClient: ").Append(PhotonNetwork.IsMasterClient).Append("\n");
-            sb = sb.Append("PhotonNetwork.CurrentRoom.MasterClientId: ").Append(PhotonNetwork.CurrentRoom.MasterClientId).Append("\n");
-            sb = sb.Append("PhotonNetwork.CurrentRoom: ").Append(PhotonNetwork.CurrentRoom).Append("\n");
-            sb = sb.Append("PhotonNetwork.CurrentRoom.CustomProperties: ").Append(PhotonNetwork.CurrentRoom.CustomProperties).Append("\n");
-            sb = sb.Append("PhotonNetwork.CurrentRoom.Name: ").Append(PhotonNetwork.CurrentRoom.Name).Append("\n");
-            sb = sb.Append("PhotonNetwork.CurrentRoom.PlayerCount: ").Append(PhotonNetwork.CurrentRoom.PlayerCount).Append("\n");
-            sb = sb.Append("PhotonNetwork.CurrentRoom.MaxPlayers: ").Append(PhotonNetwork.CurrentRoom.MaxPlayers).Append("\n");
-            sb = sb.Append("PhotonNetwork.CurrentRoom.IsOpen: ").Append(PhotonNetwork.CurrentRoom.IsOpen).Append("\n");
-            sb = sb.Append("\nBoard: \n");
-            sb.Append("Board in prop:\n");
-            for (int row = 1; row <= 8; row++)
-            {
-                for (char col = 'A'; col <= 'H'; col++)
-                {
-                    sb.Append((ReversiChess.State)PhotonNetwork.CurrentRoom.CustomProperties[row.ToString() + col]);
-                    sb.Append(" ");
-                }
-                sb.Append("\n");
-            }
-            sb.Append("\n");
-            sb.Append("Board in local:\n");
-            for (int row = 1; row <= 8; row++)
-            {
-                for (char col = 'A'; col <= 'H'; col++)
-                {
-                    sb.Append((ReversiChess.State)reversiManager.chessesOnBoard[row.ToString() + col].CurrentState);
-                    sb.Append(" ");
-                }
-                sb.Append("\n");
-            }
-            sb = sb.Append("\nStates: \n");
-            sb.Append("\n").Append("CurrentSide: ").Append(reversiManager.currentSide).Append("\n");
-            sb.Append("BlackPlayer: ").Append(BlackPlayer).Append("\n");
-            sb.Append("WhitePlayer: ").Append(WhitePlayer).Append("\n");
-            //get this client's side
-            sb.Append("MySide: ").Append(PhotonNetwork.LocalPlayer).Append("\n");
-            sb = sb.Append("Room State: ").Append((PunRoomManager.State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"]).Append("\n");
-            sb = sb.Append("Game State: ").Append((GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"]).Append("\n");
-            sb = sb.Append("Black Ready: ").Append(blackReady).Append("\n");
-            sb = sb.Append("White Ready: ").Append(whiteReady).Append("\n");
-
-            sb = sb.Append("Place Chess Ack Received: ").Append(placeChessAckReceived).Append("\n");
-            sb = sb.Append("Self Ready: ").Append(selfReady).Append("\n");
-            sb = sb.Append("No Chess is Flipping").Append(reversiManager.NoChessIsFlipping()).Append("\n");
-            //reversiManager.syncBoardwithLocalData();
-            Debug.Log(sb.ToString());
-            PrintDebugInfo = false;
-        }
     }
 
     private void DoMasterOnlyBusiness()
@@ -156,16 +101,18 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
             {
                 currentState = GameState.WaitingForOrder;
                 placeChessAckReceived = false;
+                CheckedGameResult = false;
             }
         }
         if (gameState == GameState.WaitingForOrder)
         {
             blackReady = false;
             whiteReady = false;
-            if (placeChessAckReceived && reversiManager.NoChessIsFlipping())
+            if (placeChessAckReceived && reversiManager.NoChessIsFlipping() && !CheckedGameResult)
             {
                 CallMasterUploadGameData();
                 ReversiManager.GameResult gameResult = reversiManager.GetGameResult(out ReversiManager.Side sideOfNextRound);
+                CheckedGameResult = true;
                 if (gameResult == ReversiManager.GameResult.BlackWin)
                 {
                     // TODO
@@ -217,7 +164,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         {
             // TODO: Hint player where can be placed.
             selfReady = false;
-            if (!isHintSpawned)
+            if (!isHintSpawned && reversiManager.NoChessIsFlipping())
             {
                 Dictionary<string, List<string>> LegalMoves = reversiManager.FindLegalMoves(reversiManager.currentSide);
                 Debug.Log(LegalMoves);
@@ -245,7 +192,6 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
                 {
                     Highlight highlight = hit.transform.GetComponent<Highlight>();
                     Debug.Log("Highlight at " + highlight.chess.boardIndex + " is clicked");
-                    highlight.chess.meshRenderer.enabled = true;
                     if(reversiManager.PlaceChess(highlight.chess.boardIndex)){
                         Debug.Log("Place Chess result: Success");
                         OnChessClicked(highlight.chess.boardIndex);
@@ -333,6 +279,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
             // TODO: call everyone to load game data if needed
             // TODO: check every thing is valid if needed
             // TODO: place the chess
+            reversiManager.PlaceChess(boardIndexToPlace);
             SendPlaceChessOrderToOther(boardIndexToPlace);
             Debug.Log("Sending Place Chess Order to all");
             placeChessAckReceived = true;
