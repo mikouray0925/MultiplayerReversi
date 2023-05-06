@@ -66,6 +66,7 @@ public class ReversiManager : MonoBehaviour
             for (char col = 'A'; col <= 'H'; col++)
             {
                 string boardIndex = row.ToString() + col;
+                chessesOnBoard[boardIndex].hint.gameObject.SetActive(false);
                 if (IsMoveLegal(boardIndex, out List<string> outflanked,side))
                 {
                     legalMoves[boardIndex] = outflanked;
