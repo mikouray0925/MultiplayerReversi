@@ -59,6 +59,23 @@ public class ReversiManager : MonoBehaviour
         }
     }
 
+    public void clearHints(){
+        for (int row = 1; row <= 8; row++)
+        {
+            for (char col = 'A'; col <= 'H'; col++)
+            {
+                string boardIndex = row.ToString() + col;
+                chessesOnBoard[boardIndex].hint.gameObject.SetActive(false);
+            }
+        }
+    }
+    public void showHints(Dictionary<string, List<string>> legalMoves){
+        foreach (var kvp in legalMoves)
+        {
+            chessesOnBoard[kvp.Key].hint.gameObject.SetActive(true);
+        }
+    }
+
     public Dictionary<string, List<string>> FindLegalMoves(Side side)
     {
         lastFoundLegalMoves.Clear();
@@ -117,16 +134,12 @@ public class ReversiManager : MonoBehaviour
                             else
                             {
                                 outflankedInThisDir.Add(currentIndex);
-                                if((currentIndex[0] < '1' || currentIndex[0] > '8')
-                                 ||(currentIndex[1] < 'A' || currentIndex[1] > 'H')){
-                                    outflankedInThisDir.Clear();
-                                    break;
-                                }
                             }
                         }
                         else
                         {
                             //Debug.Log("Fail to get chess at " + currentIndex);
+                            outflankedInThisDir.Clear();
                             break;
                         }
                     }
@@ -147,6 +160,7 @@ public class ReversiManager : MonoBehaviour
     {
         if (chessesOnBoard.TryGetValue(placingIndex, out ReversiChess placingChess))
         {
+            clearHints();
             placingChess.meshRenderer.enabled = true;
             if (currentSide == Side.Black)
             {
@@ -155,11 +169,6 @@ public class ReversiManager : MonoBehaviour
             else
             {
                 placingChess.PlaceWhite();
-            }
-            //hide all highlights
-            foreach (var kvp in chessesOnBoard)
-            {
-                kvp.Value.hint.gameObject.SetActive(false);
             }
             List<string> clampedChesses = lastFoundLegalMoves[placingIndex];
             Debug.Log("Clamped chesses: " + clampedChesses.Count);
@@ -194,7 +203,6 @@ public class ReversiManager : MonoBehaviour
 
         if(legalMoves.Count == 0)
         {
-
             sideOfNextTurn = currentSide;
             legalMoves = FindLegalMoves(sideOfNextTurn);
             if(legalMoves.Count == 0)

@@ -73,8 +73,10 @@ public class Debugger : MonoBehaviour
             {
                 for (char col = 'A'; col <= 'H'; col++)
                 {
-                    sb.Append((ReversiChess.State)reversiManager.chessesOnBoard[row.ToString() + col].CurrentState);
-                    sb.Append(" ");
+                    if(reversiManager.chessesOnBoard.TryGetValue(row.ToString() + col, out var chess)){
+                        sb.Append((ReversiChess.State)reversiManager.chessesOnBoard[row.ToString() + col].CurrentState);
+                        sb.Append(" ");
+                    }
                 }
                 sb.Append("\n");
             }

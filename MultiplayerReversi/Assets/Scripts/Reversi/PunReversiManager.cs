@@ -28,7 +28,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
     public bool placeChessAckReceived {get; private set;} = false;
     public bool gameResultChecked {get; private set;} = false;
 
-    public bool hintUpdated {get; private set;} = false;
+    public bool isHintUpdated {get; private set;} = false;
     
     PhotonView pv;
 
@@ -92,6 +92,9 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
             }
             else
             {
+                currentState = GameState.Paused;
+                if(BlackPlayer == null) propNeedToChange["blackActId"] = -1;
+                if(WhitePlayer == null) propNeedToChange["whiteActId"] = -1;
                 FillEmptyPlayer(ref propNeedToChange);
             }
         }
@@ -150,7 +153,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         //ReversiManager.Side currentSide = (ReversiManager.Side)PhotonNetwork.CurrentRoom.CustomProperties["currentSide"];
         if (currentState == GameState.Paused)
         {
-
+            reversiManager.clearHints();
         }
         if (currentState == GameState.WaitingForAllReady)
         {
@@ -159,20 +162,18 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
                 reversiManager.SpawnChesses(OnChessClicked, LoadChessesData);
             }
             if (boardDataLoaded && reversiManager.NoChessIsFlipping()) CallMasterSomePlayerIsReady();
-            hintUpdated = false;
+            isHintUpdated = false;
         }
         if (currentState == GameState.WaitingForOrder)
         {
             // TODO: Hint player where can be placed.
-            if (! hintUpdated && reversiManager.NoChessIsFlipping())
+            if (!isHintUpdated && reversiManager.NoChessIsFlipping())
             {
+                reversiManager.clearHints();
                 Dictionary<string, List<string>> LegalMoves = reversiManager.FindLegalMoves(reversiManager.currentSide);
                 Debug.Log(LegalMoves);
-                foreach (var kvp in LegalMoves)
-                {
-                    reversiManager.chessesOnBoard[kvp.Key].hint.gameObject.SetActive(true);
-                }
-                hintUpdated = true;
+                reversiManager.showHints(LegalMoves);
+                isHintUpdated = true;
             }
         }
     }
@@ -217,6 +218,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
                         break;
                     }
                 }
+                
             }
             else if ((int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"] == -1)
             {
