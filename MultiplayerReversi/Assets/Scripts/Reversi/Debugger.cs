@@ -54,6 +54,9 @@ public class Debugger : MonoBehaviour
             sb = sb.Append("PhotonNetwork.CurrentRoom.MaxPlayers: ").Append(PhotonNetwork.CurrentRoom.MaxPlayers).Append("\n");
             sb = sb.Append("PhotonNetwork.CurrentRoom.IsOpen: ").Append(PhotonNetwork.CurrentRoom.IsOpen).Append("\n");
 
+            sb = sb.Append("\nMiscs: \n");
+            if(PhotonNetwork.CurrentRoom.CustomProperties.TryGetValue("allMessages",out var s2))
+
             if(roomManager.currentState != PunRoomManager.State.Playing) return sb.ToString();
             
             sb = sb.Append("\nBoard: \n");
@@ -90,14 +93,16 @@ public class Debugger : MonoBehaviour
             //get this client's side
             sb.Append("MySide: ").Append(PhotonNetwork.LocalPlayer).Append("\n");
             sb = sb.Append("Room State: ").Append((PunRoomManager.State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"]).Append("\n");
-            if(PhotonNetwork.CurrentRoom.CustomProperties.TryGetValue("gameState",out var s))
-            sb = sb.Append("Game State: ").Append((PunRoomManager.GameState)s).Append("\n");
+            if(PhotonNetwork.CurrentRoom.CustomProperties.TryGetValue("gameState",out var s1))
+            sb = sb.Append("Game State: ").Append((PunRoomManager.GameState)s1).Append("\n");
             sb = sb.Append("Black Ready: ").Append(punReversiManager.blackReady).Append("\n");
             sb = sb.Append("White Ready: ").Append(punReversiManager.whiteReady).Append("\n");
 
 
             sb = sb.Append("Place Chess Ack Received: ").Append(punReversiManager.placeChessAckReceived).Append("\n");
             sb = sb.Append("No Chess is Flipping: ").Append(reversiManager.NoChessIsFlipping()).Append("\n");
+
+            
             //_ReversiManager.syncBoardwithLocalData();
             return sb.ToString();
     }

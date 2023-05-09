@@ -7,18 +7,22 @@ using UnityEngine.SceneManagement;
 using Photon.Pun;
 using Photon.Realtime;
 using PhotonHashtable = ExitGames.Client.Photon.Hashtable;
-using System.Text;
+using System;
 
 public class PunRoomManager : MonoBehaviourPunCallbacks
 {
     [Header("UI")]
     public Text roomNameText;
+    public GameObject chatTextbox;
+    public GameObject chatMsgPrefab;
+    public Transform chatMsgContent;
+    public InputField chatInput;
+    public bool isTextboxOpen = false;
+    private double lastMsgSendTime = 0;
+    private LinkedList<GameObject> chatMsgList = new LinkedList<GameObject>();
 
     [Header ("Component")]
     public PunSceneController sceneController;
-
-    [Header ("Debug")]
-    [SerializeField] private bool PrintDebugMsg = false;
 
     [Header ("Event")]
     public UnityEvent onInitRoom;
@@ -43,6 +47,7 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
         Paused, WaitingForAllReady, WaitingForOrder, End
     }
     public State currentState {get; private set;} = State.Preparing;
+    
     public delegate bool Validation();
     public Validation ableToStartGame;
 
@@ -81,6 +86,50 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
         }
     }
 
+    private void Update(){
+        if(Input.GetKeyDown(KeyCode.T) && !chatInput.isFocused){
+            isTextboxOpen = !isTextboxOpen;
+            chatTextbox.SetActive(isTextboxOpen);
+        }
+        //If pressed enter when textbox open, send msg
+        if(Input.GetKeyDown(KeyCode.Return) && isTextboxOpen && chatInput.text != ""){
+            //cooldown 250ms to prevent spam
+            try{
+                if(chatInput.text.Length > 256) throw new Exception("Message too long, please keep it under 256 characters\nOnly you can see this message");
+                if(PhotonNetwork.Time - lastMsgSendTime < 0.25f) throw new Exception("You're sending messages too fast, please wait a bit\nOnly you can see this message");
+                SendMsgToAll(chatInput.text);
+                chatInput.text = "";
+                lastMsgSendTime = PhotonNetwork.Time;
+            }
+            catch(Exception e){
+                Text msgText = Instantiate(chatMsgPrefab, chatMsgContent).GetComponent<Text>();
+                msgText.text = e.Message;
+                chatMsgList.AddLast(msgText.gameObject);
+                StartCoroutine(deleteWarningMessage(msgText.gameObject));
+            }
+        }
+    }
+
+    private IEnumerator deleteWarningMessage(GameObject msg){
+        yield return new WaitForSeconds(5);
+        chatMsgList.Remove(msg);
+        Destroy(msg);
+    }
+
+    private void SendMsgToAll(string msg){
+        pv.RPC("RpcSendMsg", RpcTarget.MasterClient, msg);
+    }
+
+    [PunRPC]
+    private void RpcSendMsg(string msg, PhotonMessageInfo info){
+        Debug.Log("Received msg from " + info.Sender.NickName + ": " + msg);
+        Text msgText = Instantiate(chatMsgPrefab, chatMsgContent).GetComponent<Text>();
+        if(info.Sender.NickName != "") msgText.text = info.Sender.NickName + " : " + msg;
+        else msgText.text = "Player " + info.Sender.ActorNumber + " : " + msg;
+        chatMsgList.AddLast(msgText.gameObject);
+        
+    }
+
     private void FixedUpdate() {
         if (PhotonNetwork.InRoom && PhotonNetwork.IsMasterClient) {
             if (PhotonNetwork.IsMasterClient) {
@@ -92,32 +141,12 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
             else {
                 currentState = (State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"];
             }
-            
         }
-        if(PrintDebugMsg){
-            StringBuilder sb = new StringBuilder();
-            sb = sb.Append("Debug Message: \n");
-            sb = sb.Append("PhotonNetwork.InRoom: ").Append(PhotonNetwork.InRoom).Append("\n");
-            sb = sb.Append("PhotonNetwork.IsMasterClient: ").Append(PhotonNetwork.IsMasterClient).Append("\n");
-            sb = sb.Append("PhotonNetwork.CurrentRoom.MasterClientId: ").Append(PhotonNetwork.CurrentRoom.MasterClientId).Append("\n");
-            sb = sb.Append("PhotonNetwork.CurrentRoom: ").Append(PhotonNetwork.CurrentRoom).Append("\n");
-            sb = sb.Append("PhotonNetwork.CurrentRoom.CustomProperties: ").Append(PhotonNetwork.CurrentRoom.CustomProperties).Append("\n");
-            sb = sb.Append("PhotonNetwork.CurrentRoom.Name: ").Append(PhotonNetwork.CurrentRoom.Name).Append("\n");
-            sb = sb.Append("PhotonNetwork.CurrentRoom.PlayerCount: ").Append(PhotonNetwork.CurrentRoom.PlayerCount).Append("\n");
-            sb = sb.Append("PhotonNetwork.CurrentRoom.MaxPlayers: ").Append(PhotonNetwork.CurrentRoom.MaxPlayers).Append("\n");
-            sb = sb.Append("PhotonNetwork.CurrentRoom.IsOpen: ").Append(PhotonNetwork.CurrentRoom.IsOpen).Append("\n");
-            sb = sb.Append("\nUser and States: \n");
-            sb = sb.Append("Black Actor ID: ").Append((int)PhotonNetwork.CurrentRoom.CustomProperties["blackActId"]).Append("\n");
-            sb = sb.Append("White Actor ID: ").Append((int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"]).Append("\n");
-            sb = sb.Append("Room State: ").Append((State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"]).Append("\n");
-            sb = sb.Append("Game State: ").Append((GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"]).Append("\n");;
-            Debug.Log(sb.ToString());
-            PrintDebugMsg = false;
-        }
+        UpdateUI();
     }
 
     public void UpdateUI() {
-        if (roomNameText) roomNameText.text = PhotonNetwork.CurrentRoom.Name;
+        if (roomNameText.IsActive()) roomNameText.text = PhotonNetwork.CurrentRoom.Name;
     }
 
     public void UpdatePlayerList() {
@@ -136,7 +165,7 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
             onBecomeMasterClient.Invoke();
             isMasterClient = true;
         }
-        if ( isMasterClient && !PhotonNetwork.IsMasterClient) {
+        if (isMasterClient && !PhotonNetwork.IsMasterClient) {
             onNoLongerMasterClient.Invoke();
             isMasterClient = false;
         }

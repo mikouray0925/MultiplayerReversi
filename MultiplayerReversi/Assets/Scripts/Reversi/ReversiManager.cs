@@ -60,12 +60,14 @@ public class ReversiManager : MonoBehaviour
     }
 
     public void clearHints(){
+        if(chessesOnBoard == null) return;
         for (int row = 1; row <= 8; row++)
         {
             for (char col = 'A'; col <= 'H'; col++)
             {
                 string boardIndex = row.ToString() + col;
-                chessesOnBoard[boardIndex].hint.gameObject.SetActive(false);
+                if(chessesOnBoard.TryGetValue(boardIndex, out ReversiChess chess))
+                chess.hint.gameObject.SetActive(false);
             }
         }
     }

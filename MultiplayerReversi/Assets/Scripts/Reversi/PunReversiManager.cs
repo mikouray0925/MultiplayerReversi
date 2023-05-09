@@ -282,25 +282,28 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
             // TODO: call everyone to load game data if needed
             // TODO: check every thing is valid if needed
             reversiManager.PlaceChess(boardIndexToPlace);
-            SendPlaceChessOrderToOther(boardIndexToPlace);
+            SendPlaceChessOrderToOther(boardIndexToPlace, info.Sender);
             Debug.Log("Sending Place Chess Order to other");
             placeChessAckReceived = true;
         }
     }
 
-    private void SendPlaceChessOrderToOther(string boardIndexToPlace)
+    private void SendPlaceChessOrderToOther(string boardIndexToPlace, Player sender)
     {
-        pv.RPC("RpcReceivePlaceChessOrder", RpcTarget.Others, boardIndexToPlace);
+        pv.RPC("RpcReceivePlaceChessOrder", RpcTarget.Others, boardIndexToPlace, sender);
     }
     [PunRPC]
-    private void RpcReceivePlaceChessOrder(string boardIndexToPlace, PhotonMessageInfo info)
+    private void RpcReceivePlaceChessOrder(string boardIndexToPlace, Player sender, PhotonMessageInfo info)
     {
-        if (reversiManager.PlaceChess(boardIndexToPlace)) {
-            Debug.Log("Place chess at " + boardIndexToPlace);
-        }
-        else {
-            Debug.Log("Place chess failed");
-            // maybe reload game data is needed
+        if(PhotonNetwork.LocalPlayer.ActorNumber != sender.ActorNumber)
+        {
+            if (reversiManager.PlaceChess(boardIndexToPlace)) {
+                Debug.Log("Place chess at " + boardIndexToPlace);
+            }
+            else {
+                Debug.Log("Place chess failed");
+                // maybe reload game data is needed
+            }
         }
     }
 
