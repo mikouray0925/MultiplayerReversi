@@ -95,7 +95,6 @@ public class Debugger : MonoBehaviour
 
 
             sb = sb.Append("Place Chess Ack Received: ").Append(punReversiManager.placeChessAckReceived).Append("\n");
-            sb = sb.Append("Self Ready: ").Append(punReversiManager.selfReady).Append("\n");
             sb = sb.Append("No Chess is Flipping: ").Append(reversiManager.NoChessIsFlipping()).Append("\n");
             //_ReversiManager.syncBoardwithLocalData();
             return sb.ToString();

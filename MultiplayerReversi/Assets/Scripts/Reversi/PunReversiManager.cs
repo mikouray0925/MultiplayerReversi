@@ -22,7 +22,6 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
     }
     public GameState currentState = GameState.Paused;
 
-    public bool selfReady = false;
     // only for master
     public bool blackReady {get; private set;} = false;
     public bool whiteReady {get; private set;} = false;
@@ -84,6 +83,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         PhotonHashtable propNeedToChange = new PhotonHashtable();
 
         GameState gameState = (GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"];
+        if (BlackPlayer == null || WhitePlayer == null) gameState = GameState.Paused;
         if (gameState == GameState.Paused)
         {
             if (BlackPlayer != null && WhitePlayer != null)
@@ -164,7 +164,6 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         if (currentState == GameState.WaitingForOrder)
         {
             // TODO: Hint player where can be placed.
-            selfReady = false;
             if (! hintUpdated && reversiManager.NoChessIsFlipping())
             {
                 Dictionary<string, List<string>> LegalMoves = reversiManager.FindLegalMoves(reversiManager.currentSide);
@@ -332,7 +331,6 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
 
     private void CallMasterSomePlayerIsReady()
     {
-        selfReady = true;
         pv.RPC("RpcSomePlayerIsReady", RpcTarget.MasterClient);
     }
     [PunRPC]
@@ -426,51 +424,6 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
                 else return null;
             }
             else return null;
-        }
-    }
-
-    public override void OnPlayerEnteredRoom(Player player)
-    {
-        if (PhotonNetwork.InRoom && roomManager && PhotonNetwork.IsMasterClient)
-        {
-            PhotonHashtable propNeedToChange = new PhotonHashtable();
-
-            if ((int)PhotonNetwork.CurrentRoom.CustomProperties["blackActId"] == -1)
-            {
-                propNeedToChange["blackActId"] = player.ActorNumber;
-                roomManager.ChangeCustomProperties(propNeedToChange);
-            }
-
-            else if ((int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"] == -1)
-            {
-                propNeedToChange["whiteActId"] = player.ActorNumber;
-                roomManager.ChangeCustomProperties(propNeedToChange);
-            }
-        }
-    }
-
-    public override void OnPlayerLeftRoom(Player player)
-    {
-        //TODO : fix logic when people disconnect, master client haven't switched, but event is called
-        if (PhotonNetwork.InRoom && roomManager && PhotonNetwork.IsMasterClient)
-        {
-            PhotonHashtable propNeedToChange = new PhotonHashtable();
-
-            if ((int)PhotonNetwork.CurrentRoom.CustomProperties["blackActId"] == player.ActorNumber)
-            {
-                propNeedToChange["blackActId"] = -1;
-                propNeedToChange["gameState"] = GameState.Paused;
-                blackReady = false;
-                roomManager.ChangeCustomProperties(propNeedToChange);
-            }
-
-            if ((int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"] == player.ActorNumber)
-            {
-                propNeedToChange["whiteActId"] = -1;
-                propNeedToChange["gameState"] = GameState.Paused;
-                whiteReady = false;
-                roomManager.ChangeCustomProperties(propNeedToChange);
-            }
         }
     }
 }
