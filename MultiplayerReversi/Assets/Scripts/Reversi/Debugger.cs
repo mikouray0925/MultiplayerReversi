@@ -54,9 +54,6 @@ public class Debugger : MonoBehaviour
             sb = sb.Append("PhotonNetwork.CurrentRoom.MaxPlayers: ").Append(PhotonNetwork.CurrentRoom.MaxPlayers).Append("\n");
             sb = sb.Append("PhotonNetwork.CurrentRoom.IsOpen: ").Append(PhotonNetwork.CurrentRoom.IsOpen).Append("\n");
 
-            sb = sb.Append("\nMiscs: \n");
-            if(PhotonNetwork.CurrentRoom.CustomProperties.TryGetValue("allMessages",out var s2))
-
             if(roomManager.currentState != PunRoomManager.State.Playing) return sb.ToString();
             
             sb = sb.Append("\nBoard: \n");

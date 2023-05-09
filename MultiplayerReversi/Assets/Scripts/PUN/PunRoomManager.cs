@@ -117,7 +117,7 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
     }
 
     private void SendMsgToAll(string msg){
-        pv.RPC("RpcSendMsg", RpcTarget.MasterClient, msg);
+        pv.RPC("RpcSendMsg", RpcTarget.All, msg);
     }
 
     [PunRPC]
@@ -127,7 +127,6 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
         if(info.Sender.NickName != "") msgText.text = info.Sender.NickName + " : " + msg;
         else msgText.text = "Player " + info.Sender.ActorNumber + " : " + msg;
         chatMsgList.AddLast(msgText.gameObject);
-        
     }
 
     private void FixedUpdate() {
