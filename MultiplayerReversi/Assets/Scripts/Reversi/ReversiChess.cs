@@ -53,12 +53,14 @@ public class ReversiChess : MonoBehaviour
 
     public void PlaceWhite(){
         animator.enabled = true;
+        currentState = State.White;
         NoChessIsFlipping = false;
         animator.Play("PlaceWhite");
         StartCoroutine("animSleep");
     }
     public void PlaceBlack(){
         animator.enabled = true;
+        currentState = State.Black;
         NoChessIsFlipping = false;
         animator.Play("PlaceBlack");
         StartCoroutine("animSleep");
@@ -78,6 +80,14 @@ public class ReversiChess : MonoBehaviour
             model_transform.rotation = Quaternion.Euler(180f, 0, 0);
         }
     }
+    private void checkRotationBeforeFlip(){
+        if (currentState == State.Black) {
+            animator.Play("ZeroSecRotateBlack");
+        }
+        if (currentState == State.White) {
+            animator.Play("ZeroSecRotateWhite");
+        }
+    }
     public IEnumerable animSleep(){
         yield return new WaitForSeconds(0.4f);
         animator.enabled = false;
@@ -85,6 +95,7 @@ public class ReversiChess : MonoBehaviour
     public IEnumerator Flip() {
         // TODO: flip the chess. remember to update currentState.
         animator.enabled = true;
+        checkRotationBeforeFlip();
         WaitForSeconds wait = new WaitForSeconds(0.4f);
         yield return wait;
         Debug.Log("Flipping " + boardIndex+ "State: " + currentState);

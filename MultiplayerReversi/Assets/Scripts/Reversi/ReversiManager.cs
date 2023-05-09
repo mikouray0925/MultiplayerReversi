@@ -117,6 +117,11 @@ public class ReversiManager : MonoBehaviour
                             else
                             {
                                 outflankedInThisDir.Add(currentIndex);
+                                if((currentIndex[0] < '1' || currentIndex[0] > '8')
+                                 ||(currentIndex[1] < 'A' || currentIndex[1] > 'H')){
+                                    outflankedInThisDir.Clear();
+                                    break;
+                                }
                             }
                         }
                         else
@@ -145,12 +150,10 @@ public class ReversiManager : MonoBehaviour
             placingChess.meshRenderer.enabled = true;
             if (currentSide == Side.Black)
             {
-                placingChess.CurrentState = ReversiChess.State.Black;
                 placingChess.PlaceBlack();
             }
             else
             {
-                placingChess.CurrentState = ReversiChess.State.White;
                 placingChess.PlaceWhite();
             }
             //hide all highlights

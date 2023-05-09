@@ -885,14 +885,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   roomManager: {fileID: 1116413972}
   reversiManager: {fileID: 1116413978}
-  boardDataLoaded: 0
-  isHintSpawned: 0
   currentState: 0
   selfReady: 0
-  blackReady: 0
-  whiteReady: 0
-  placeChessAckReceived: 0
-  CheckedGameResult: 0
 --- !u!114 &1116413977
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1208,11 +1202,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isDebugging: 0
   isCanvasOn: 0
-  canvas: {fileID: 0}
-  _RoomManager: {fileID: 1116413972}
-  _PunReversiManager: {fileID: 1116413976}
-  _ReversiManager: {fileID: 1116413978}
-  inRoomDebugText: {fileID: 727303989}
+  canvas: {fileID: 771910781}
+  roomManager: {fileID: 1116413972}
+  punReversiManager: {fileID: 1116413976}
+  reversiManager: {fileID: 1116413978}
+  debugText: {fileID: 727303989}
 --- !u!4 &1171737886
 Transform:
   m_ObjectHideFlags: 0

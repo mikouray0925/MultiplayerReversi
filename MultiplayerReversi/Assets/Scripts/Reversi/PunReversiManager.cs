@@ -451,6 +451,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
 
     public override void OnPlayerLeftRoom(Player player)
     {
+        //TODO : fix logic when people disconnect, master client haven't switched, but event is called
         if (PhotonNetwork.InRoom && roomManager && PhotonNetwork.IsMasterClient)
         {
             PhotonHashtable propNeedToChange = new PhotonHashtable();
