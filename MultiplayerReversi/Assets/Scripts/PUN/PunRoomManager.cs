@@ -13,16 +13,10 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
 {
     [Header("UI")]
     public Text roomNameText;
-    public GameObject chatTextbox;
-    public GameObject chatMsgPrefab;
-    public Transform chatMsgContent;
-    public InputField chatInput;
-    public bool isTextboxOpen = false;
-    private double lastMsgSendTime = 0;
-    private LinkedList<GameObject> chatMsgList = new LinkedList<GameObject>();
 
     [Header ("Component")]
     public PunSceneController sceneController;
+    public PunRoomChatManager chatManager;
 
     [Header ("Event")]
     public UnityEvent onInitRoom;
@@ -51,7 +45,7 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
     public delegate bool Validation();
     public Validation ableToStartGame;
 
-    private PhotonView pv;
+    public PhotonView pv;
 
     private void Awake() {
         if (TryGetComponent<PhotonView>(out PhotonView _pv)) {
@@ -59,6 +53,7 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
         } else {
             pv = gameObject.AddComponent<PhotonView>();
         }
+        chatManager.pv = pv;
     }
 
     private void Start() {
@@ -86,49 +81,7 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
         }
     }
 
-    private void Update(){
-        if(Input.GetKeyDown(KeyCode.T) && !chatInput.isFocused){
-            isTextboxOpen = !isTextboxOpen;
-            chatTextbox.SetActive(isTextboxOpen);
-        }
-        //If pressed enter when textbox open, send msg
-        if(Input.GetKeyDown(KeyCode.Return) && isTextboxOpen && chatInput.text != ""){
-            //cooldown 250ms to prevent spam
-            try{
-                if(chatInput.text.Length > 256) throw new Exception("Message too long, please keep it under 256 characters\nOnly you can see this message");
-                if(PhotonNetwork.Time - lastMsgSendTime < 0.25f) throw new Exception("You're sending messages too fast, please wait a bit\nOnly you can see this message");
-                SendMsgToAll(chatInput.text);
-                chatInput.text = "";
-                lastMsgSendTime = PhotonNetwork.Time;
-            }
-            catch(Exception e){
-                Text msgText = Instantiate(chatMsgPrefab, chatMsgContent).GetComponent<Text>();
-                msgText.text = e.Message;
-                chatMsgList.AddLast(msgText.gameObject);
-                StartCoroutine(deleteWarningMessage(msgText.gameObject));
-            }
-        }
-    }
-
-    private IEnumerator deleteWarningMessage(GameObject msg){
-        yield return new WaitForSeconds(5);
-        chatMsgList.Remove(msg);
-        Destroy(msg);
-    }
-
-    private void SendMsgToAll(string msg){
-        pv.RPC("RpcSendMsg", RpcTarget.All, msg);
-    }
-
-    [PunRPC]
-    private void RpcSendMsg(string msg, PhotonMessageInfo info){
-        Debug.Log("Received msg from " + info.Sender.NickName + ": " + msg);
-        Text msgText = Instantiate(chatMsgPrefab, chatMsgContent).GetComponent<Text>();
-        if(info.Sender.NickName != "") msgText.text = info.Sender.NickName + " : " + msg;
-        else msgText.text = "Player " + info.Sender.ActorNumber + " : " + msg;
-        chatMsgList.AddLast(msgText.gameObject);
-    }
-
+    
     private void FixedUpdate() {
         if (PhotonNetwork.InRoom && PhotonNetwork.IsMasterClient) {
             if (PhotonNetwork.IsMasterClient) {
