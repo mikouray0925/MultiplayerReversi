@@ -98,7 +98,7 @@ public class ReversiChess : MonoBehaviour
         checkRotationBeforeFlip();
         WaitForSeconds wait = new WaitForSeconds(0.4f);
         yield return wait;
-        Debug.Log("Flipping " + boardIndex+ "State: " + currentState);
+        //Debug.Log("Flipping " + boardIndex+ "State: " + currentState);
         if (currentState == State.Black) {
             animator.Play("BlackToWhite");
             currentState = State.FlippingToWhite;
@@ -116,9 +116,9 @@ public class ReversiChess : MonoBehaviour
         } else if (currentState == State.FlippingToWhite) {
             currentState = State.White;
         }
+        NoChessIsFlipping = true;
         Debug.Log("Flipped " + boardIndex + "State: " + currentState);
         stateID = (int)currentState;
-        NoChessIsFlipping = true;
         animator.enabled = false;
     }
 }

@@ -29,6 +29,7 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
     public UnityEvent onMasterStartGame;
     public UnityEvent onGameStarted;
     public UnityEvent onEnterPlayingRoom;
+    public UnityEvent onGameEnded;
 
     public Dictionary<int, Player> players {get; private set;} = new Dictionary<int, Player>();
     public bool isMasterClient {get; private set;} = false;
@@ -168,4 +169,6 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
             PhotonNetwork.CurrentRoom.SetCustomProperties(properties);
         }
     }
+
+    
 }

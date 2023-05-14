@@ -172,17 +172,18 @@ public class ReversiManager : MonoBehaviour
             {
                 placingChess.PlaceWhite();
             }
-            List<string> clampedChesses = lastFoundLegalMoves[placingIndex];
-            Debug.Log("Clamped chesses: " + clampedChesses.Count);
-            if (clampedChesses.Count > 0)
+            if (lastFoundLegalMoves.TryGetValue(placingIndex, out List<string> clampedChesses))
             {
-                foreach (var clampedChess in clampedChesses)
+                Debug.Log("Clamped chesses: " + clampedChesses.Count);
+                if (clampedChesses.Count > 0)
                 {
-                    StartCoroutine(chessesOnBoard[clampedChess].Flip());
+                    foreach (var clampedChess in clampedChesses)
+                    {
+                        StartCoroutine(chessesOnBoard[clampedChess].Flip());
+                    }
+                    return true;
                 }
-                //update chessesOnBoard into new state
-
-                return true;
+                else return false;
             }
             else return false;
         }
