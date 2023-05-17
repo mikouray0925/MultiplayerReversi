@@ -71,6 +71,13 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
             }
         }
         roomManager.ChangeCustomProperties(propNeedToChange);
+
+
+        TweenManager.instance.TweenReset();
+        if(PhotonNetwork.IsMasterClient){
+            blackReady = false;
+            whiteReady = false;
+        }
     }
 
     private void FixedUpdate()
@@ -134,18 +141,30 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
                     // TODO
                     currentState = GameState.End;
                     propNeedToChange["Winner"] = PhotonNetwork.CurrentRoom.CustomProperties["blackActId"];
+                    blackReady = false;
+                    whiteReady = false;
                 }
                 else if (gameResult == ReversiManager.GameResult.WhiteWin)
                 {
                     // TODO
                     currentState = GameState.End;
                     propNeedToChange["Winner"] = PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"];
+                    blackReady = false;
+                    whiteReady = false;
                 }
                 else
                 {
                     reversiManager.currentSide = sideOfNextRound;
                     currentState = GameState.WaitingForAllReady;
                 }
+            }
+        }
+        if(gameState == GameState.End){
+            if (BlackPlayer != null && blackReady &&
+                WhitePlayer != null && whiteReady)
+            {
+                currentState = GameState.Paused;
+                roomManager.CallEndGameToAll();
             }
         }
 
@@ -230,6 +249,10 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
             {
                 TweenManager.instance.PlayDefeatAnimation();
             }
+            if(!isPlayerReadySent){
+                CallMasterSomePlayerIsReady();
+                isPlayerReadySent = true;
+            } 
         }
     }
 

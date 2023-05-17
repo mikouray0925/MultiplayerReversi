@@ -13,6 +13,7 @@ public class TweenManager : MonoBehaviour
     public Image background;
     public GameObject returnButton;
     bool isPlayingEndAnimation = false;
+    Rect screenSize;
 
     [Header("Debug")]
 
@@ -22,6 +23,7 @@ public class TweenManager : MonoBehaviour
     private void Awake() {
         if (instance == null) 
             instance = this;
+        screenSize = Camera.main.pixelRect;
     }
 
     private void Update(){
@@ -35,6 +37,9 @@ public class TweenManager : MonoBehaviour
         }
     }
 
+    public void TweenReset(){
+        isPlayingEndAnimation = false;
+    }
 
     [Header("Victory")]
     public GameObject victoryPanel;
@@ -42,14 +47,14 @@ public class TweenManager : MonoBehaviour
         if(isPlayingEndAnimation) return;
         isPlayingEndAnimation = true;
 
-        victoryPanel.transform.position = new Vector3(960,2000,0);
-        returnButton.transform.position = new Vector3(960,-600,0);
+        victoryPanel.transform.position = new Vector3((screenSize.xMin + screenSize.xMax)/2 ,screenSize.yMax + 200,0);
+        returnButton.transform.position = new Vector3((screenSize.xMin + screenSize.xMax)/2 ,screenSize.yMin - 100,0);
 
         LeanTween.alpha(background.rectTransform, 0.5f, 1f).setEaseInSine();
         victoryPanel.SetActive(true);
-        LeanTween.moveY(victoryPanel, 540, 2f).setEaseOutBounce();
+        LeanTween.moveY(victoryPanel, (screenSize.yMin + screenSize.yMax) * 0.6f, 2f).setEaseOutBounce();
         returnButton.SetActive(true);
-        LeanTween.moveY(returnButton,140,1f).setEaseInSine().setDelay(2f);
+        LeanTween.moveY(returnButton,(screenSize.yMin + screenSize.yMax) * 0.15f,1f).setEaseInSine().setDelay(2f);
     }
 
     [Header("Defeat")]
@@ -58,14 +63,14 @@ public class TweenManager : MonoBehaviour
         if(isPlayingEndAnimation) return;
         isPlayingEndAnimation = true;
         //reset position
-        defeatPanel.GetComponent<RectTransform>().position = new Vector3(960,2000,0);
-        returnButton.GetComponent<RectTransform>().position = new Vector3(960,-100,0);
+        defeatPanel.transform.position = new Vector3((screenSize.xMin + screenSize.xMax)/2 ,screenSize.yMax + 200,0);
+        returnButton.transform.position = new Vector3((screenSize.xMin + screenSize.xMax)/2 ,screenSize.yMin - 100,0);
 
         LeanTween.alpha(background.rectTransform, 0.5f, 1f).setEaseInSine();
         defeatPanel.SetActive(true);
-        LeanTween.moveY(defeatPanel, 540, 2f).setEaseOutBounce();
+        LeanTween.moveY(defeatPanel, (screenSize.yMin + screenSize.yMax) * 0.6f, 2f).setEaseOutBounce();
         returnButton.SetActive(true);
-        LeanTween.moveY(returnButton,140,1f).setEaseInSine().setDelay(2f);
+        LeanTween.moveY(returnButton,(screenSize.yMin + screenSize.yMax) * 0.15f,1f).setEaseInSine().setDelay(2f);
     }
 
 
@@ -80,10 +85,10 @@ public class TweenManager : MonoBehaviour
     public GameObject paused_d;
     public GameObject paused_parent;
     public void PlayGamePauseAnimation() {
-        returnButton.GetComponent<RectTransform>().position = new Vector3(960,-100,0);
+        returnButton.transform.position = new Vector3((screenSize.xMin + screenSize.xMax)/2 ,screenSize.yMin - 100,0);
         LeanTween.alpha(background.rectTransform, 0.5f, 1f).setEaseInSine();
         returnButton.SetActive(true);
-        LeanTween.moveY(returnButton,140,1f).setEaseInSine();
+        LeanTween.moveY(returnButton,(screenSize.yMin + screenSize.yMax) * 0.15f,1f).setEaseInSine();
         isPaused = true;
         paused_parent.SetActive(isPaused);
         

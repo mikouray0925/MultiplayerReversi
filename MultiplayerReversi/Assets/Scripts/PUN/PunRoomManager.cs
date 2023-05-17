@@ -154,11 +154,38 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
         }
     }
 
+    
     [PunRPC]
     private void RpcStartGame(PhotonMessageInfo info) {
         currentState = State.Playing;
         onGameStarted.Invoke();
     }
+
+
+
+    [PunRPC]
+    private void RpcEndGame(PhotonMessageInfo info) {
+        if (!PhotonNetwork.IsMasterClient) currentState = State.Preparing;
+        //TODO add EndGame event
+        //Achievement, Record, etc.
+        //onGameEnded.Invoke();
+
+    }
+
+    public void CallEndGameToAll() {
+        if (!PhotonNetwork.IsMasterClient) return;
+        if ( ableToStartGame == null ||
+            (ableToStartGame != null && ableToStartGame())) {
+            PhotonHashtable propNeedToChange = new PhotonHashtable();
+            currentState = State.Preparing;
+            propNeedToChange["roomState"] = currentState;
+            ChangeCustomProperties(propNeedToChange);
+            pv.RPC("RpcEndGame", RpcTarget.All);
+            //TODO: add onMasterEndGame event
+            //onMasterEndGame.Invoke();
+        }
+    }
+
 
     public void ChangeCustomProperties(PhotonHashtable propertiesNeedToChange) {
         if (isMasterClient) {
