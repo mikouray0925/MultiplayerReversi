@@ -70,6 +70,7 @@ public class ReversiManager : MonoBehaviour
                 if(chessesOnBoard.TryGetValue(boardIndex, out ReversiChess chess)) 
                 {
                     chess.CurrentState = ReversiChess.State.Unused;
+                    chess.meshRenderer.enabled = false;
                     chess.hint.gameObject.SetActive(false);
                 }
             }

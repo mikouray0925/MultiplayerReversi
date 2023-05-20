@@ -210,6 +210,7 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
     [PunRPC]
     private void RpcReturnToRoom(PhotonMessageInfo info) {
         currentState = State.Preparing;
+        TweenManager.instance.ClearGameEndAnimation();
         if (PhotonNetwork.IsMasterClient) {
             PhotonHashtable propNeedToChange = new PhotonHashtable();
             propNeedToChange["roomState"] = currentState;

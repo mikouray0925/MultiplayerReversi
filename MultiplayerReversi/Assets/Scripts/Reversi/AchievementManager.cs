@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using UnityEngine;
 
 class AchievementManager : MonoBehaviour{
@@ -7,8 +8,6 @@ class AchievementManager : MonoBehaviour{
     //Singleton class, only exist get method
     //</Summary>
     // References
-    [SerializeField] private GameObject achPrefab;
-
     private static int WinCount;
     private static int LoseCount;
     private static int DrawCount;
@@ -25,7 +24,11 @@ class AchievementManager : MonoBehaviour{
     public static AchievementManager Instance {get; private set;}
     internal void UnlockAchievement(string achievementName){
         if(AchievementList.Contains(achievementName)){
-            AchievementProgress[achievementName] = true;
+            if(AchievementProgress[achievementName] == false) {
+                AchievementProgress[achievementName] = true;
+                Debug.Log("Achievement unlocked: " + achievementName);
+                //TODO show achievement unlocked
+            }
         }
     }
     internal void AddWinCount(){
@@ -67,6 +70,15 @@ class AchievementManager : MonoBehaviour{
         DrawCount = PlayerPrefs.GetInt("DrawCount");
         TotalGameCount = PlayerPrefs.GetInt("TotalGameCount");
         return true;
+    }
+
+    public List<KeyValuePair<string, bool>> GetAchievementProgress(){
+        List<KeyValuePair<string, bool>> result = new List<KeyValuePair<string, bool>>();
+        foreach (var str in AchievementList)
+        {
+            result.Add(new KeyValuePair<string, bool>(str, AchievementProgress[str]));
+        }
+        return result;
     }
 
     private static List<string> AchievementList  = new List<string>(){
@@ -138,6 +150,7 @@ class AchievementHandler
         else if(result == GameResult.Lose){
             // Lose achs
             AchievementManager.Instance.AddLoseCount();
+        
         }
         else if(result == GameResult.Tie){
             // Tie achs

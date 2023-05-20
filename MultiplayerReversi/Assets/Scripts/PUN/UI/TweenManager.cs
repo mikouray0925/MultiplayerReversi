@@ -73,6 +73,17 @@ public class TweenManager : MonoBehaviour
         LeanTween.moveY(returnButton,(screenSize.yMin + screenSize.yMax) * 0.15f,1f).setEaseInSine().setDelay(2f);
     }
 
+    public void ClearGameEndAnimation(){
+        isPlayingEndAnimation = false;
+        isPaused = false;
+        LeanTween.alpha(background.rectTransform, 0f, .5f).setEaseInSine();
+        LeanTween.cancelAll();
+        paused_parent.SetActive(isPaused);
+        returnButton.SetActive(false);
+        victoryPanel.SetActive(false);
+        defeatPanel.SetActive(false);
+    }
+
 
     [Header("Play & Pause")]
     public bool isPaused = false;
