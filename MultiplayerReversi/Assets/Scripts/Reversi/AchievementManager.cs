@@ -6,12 +6,14 @@ class AchievementManager : MonoBehaviour{
     //<Summary>
     //Singleton class, only exist get method
     //</Summary>
+    // References
+    [SerializeField] private GameObject achPrefab;
+
     private static int WinCount;
     private static int LoseCount;
     private static int DrawCount;
     private static int TotalGameCount;
     private static Dictionary<string, bool> AchievementProgress = new Dictionary<string, bool>();
-
     private void Awake(){
         if (TryGetComponent<AchievementManager>(out AchievementManager _instance)){
             Instance = _instance;
@@ -40,6 +42,14 @@ class AchievementManager : MonoBehaviour{
     }
     private static void ExportData(){
         //TODO export data to file
+        foreach (var kvp in AchievementProgress)
+        {
+            PlayerPrefs.SetInt(kvp.Key, kvp.Value ? 1 : 0);
+        }
+        PlayerPrefs.SetInt("WinCount", WinCount);
+        PlayerPrefs.SetInt("LoseCount", LoseCount);
+        PlayerPrefs.SetInt("DrawCount", DrawCount);
+        PlayerPrefs.SetInt("TotalGameCount", TotalGameCount);
     }
 
     private static List<string> AchievementList  = new List<string>(){
