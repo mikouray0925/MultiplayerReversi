@@ -40,7 +40,7 @@ class AchievementManager : MonoBehaviour{
         DrawCount++;
         TotalGameCount++;
     }
-    private static void ExportData(){
+    private static void WriteSave(){
         //TODO export data to file
         foreach (var kvp in AchievementProgress)
         {
@@ -50,6 +50,23 @@ class AchievementManager : MonoBehaviour{
         PlayerPrefs.SetInt("LoseCount", LoseCount);
         PlayerPrefs.SetInt("DrawCount", DrawCount);
         PlayerPrefs.SetInt("TotalGameCount", TotalGameCount);
+        
+        PlayerPrefs.SetInt("HasSave", 1);
+        PlayerPrefs.Save();
+    }
+
+    private static bool ReadSave(){
+        if (!PlayerPrefs.HasKey("HasSave")) return false;
+        
+        foreach (var kvp in AchievementProgress)
+        {
+            AchievementProgress[kvp.Key] = PlayerPrefs.GetInt(kvp.Key) > 0;
+        }
+        WinCount = PlayerPrefs.GetInt("WinCount");
+        LoseCount = PlayerPrefs.GetInt("LoseCount");
+        DrawCount = PlayerPrefs.GetInt("DrawCount");
+        TotalGameCount = PlayerPrefs.GetInt("TotalGameCount");
+        return true;
     }
 
     private static List<string> AchievementList  = new List<string>(){

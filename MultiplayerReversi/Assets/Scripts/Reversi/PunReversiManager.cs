@@ -511,7 +511,8 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
     }
 
     private void InitGame()
-    {
+    {   
+        reversiManager.ClearAllChesses();
         reversiManager.chessesOnBoard["4D"].CurrentState = ReversiChess.State.White;
         reversiManager.chessesOnBoard["4E"].CurrentState = ReversiChess.State.Black;
         reversiManager.chessesOnBoard["5D"].CurrentState = ReversiChess.State.Black;

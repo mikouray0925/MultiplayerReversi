@@ -59,7 +59,25 @@ public class ReversiManager : MonoBehaviour
         }
     }
 
-    public void clearHints(){
+    public void ClearAllChesses() 
+    {
+        if(chessesOnBoard == null) return;
+        for (int row = 1; row <= 8; row++)
+        {
+            for (char col = 'A'; col <= 'H'; col++)
+            {
+                string boardIndex = row.ToString() + col;
+                if(chessesOnBoard.TryGetValue(boardIndex, out ReversiChess chess)) 
+                {
+                    chess.CurrentState = ReversiChess.State.Unused;
+                    chess.hint.gameObject.SetActive(false);
+                }
+            }
+        }
+    }
+
+    public void clearHints() 
+    {
         if(chessesOnBoard == null) return;
         for (int row = 1; row <= 8; row++)
         {
@@ -67,7 +85,7 @@ public class ReversiManager : MonoBehaviour
             {
                 string boardIndex = row.ToString() + col;
                 if(chessesOnBoard.TryGetValue(boardIndex, out ReversiChess chess))
-                chess.hint.gameObject.SetActive(false);
+                    chess.hint.gameObject.SetActive(false);
             }
         }
     }

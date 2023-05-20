@@ -352,7 +352,7 @@ namespace ParrelSync
             ClonesManager.StartHiddenConsoleProcess("cmd.exe", cmd);
         }
 
-        //TODO(?) avoid terminal calls and use proper api stuff. See below for windows! 
+        //(?) avoid terminal calls and use proper api stuff. See below for windows! 
         ////https://docs.microsoft.com/en-us/windows/desktop/api/ioapiset/nf-ioapiset-deviceiocontrol
         //[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         //private static extern bool DeviceIoControl(System.IntPtr hDevice, uint dwIoControlCode,
