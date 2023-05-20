@@ -11,7 +11,7 @@ public class ReversiManager : MonoBehaviour
 
     public enum Side
     {
-        Black = 1, White = 2
+        Black = 1, White = 2, Error = 3
     }
     private List<Vector2Int> directions = new List<Vector2Int>() {
         new Vector2Int(0, 1), new Vector2Int(1, 1), new Vector2Int(1, 0), new Vector2Int(1, -1),

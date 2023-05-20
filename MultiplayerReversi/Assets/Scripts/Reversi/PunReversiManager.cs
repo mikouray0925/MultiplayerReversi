@@ -260,6 +260,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
             if(PhotonNetwork.LocalPlayer.ActorNumber == (int)PhotonNetwork.CurrentRoom.CustomProperties["Winner"])
             {
                 TweenManager.instance.PlayVictoryAnimation();
+                AchievementHandler.HandleEndGame(reversiManager.chessesOnBoard, AchievementHandler.GameResult.Win, GetPlayerSide(PhotonNetwork.LocalPlayer.ActorNumber));
             }
             else
             {
@@ -303,6 +304,8 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
                     Debug.Log("Highlight at " + highlight.chess.boardIndex + " is clicked");
                     if(reversiManager.PlaceChess(highlight.chess.boardIndex)){
                         Debug.Log("Place Chess result: Success");
+                        AchievementHandler.HandlePlaceChess(reversiManager.lastFoundLegalMoves[highlight.chess.boardIndex]);
+                        Debug.Log("Flanked Chess: " + reversiManager.lastFoundLegalMoves[highlight.chess.boardIndex].Count);
                         OnChessClicked(highlight.chess.boardIndex);
                     }
                     
@@ -345,26 +348,11 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
     {
         if ((GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"] == GameState.WaitingForOrder)
         {
-            if (reversiManager.currentSide == ReversiManager.Side.Black) {
-                //Debug.Log("It's black round.");
-            }
-            else {
-                //Debug.Log("It's white round.");
-            }
-            if (reversiManager.currentSide == ReversiManager.Side.Black &&
-                BlackPlayer != null &&
-                PhotonNetwork.LocalPlayer.ActorNumber == BlackPlayer.ActorNumber)
+            if(GetPlayerSide(PhotonNetwork.LocalPlayer.ActorNumber) == reversiManager.currentSide)
             {
-                //Debug.Log("It's my round.");
                 return true;
             }
-            if (reversiManager.currentSide == ReversiManager.Side.White &&
-                WhitePlayer != null &&
-                PhotonNetwork.LocalPlayer.ActorNumber == WhitePlayer.ActorNumber)
-            {
-                //Debug.Log("It's my round.");
-                return true;
-            }
+            else return false;
         }
         return false;
     }
@@ -557,6 +545,13 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         }
     }
 
+    public ReversiManager.Side GetPlayerSide(int actId)
+    {
+        if (actId == blackActIdCache) return ReversiManager.Side.Black;
+        else if (actId == whiteActIdCache) return ReversiManager.Side.White;
+        else return ReversiManager.Side.Error;
+    }
+
     public void SwitchPlayerSide(){
         StringBuilder sb = new StringBuilder();
         sb.Append("Switch Player Side Callback activated, Timestamp: " + PhotonNetwork.Time + "\n");
@@ -569,5 +564,13 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
             sb.Append("New whiteActId: " + temp + "\n");
         }
         Debug.Log(sb.ToString());
+    }
+
+    public void OnBecomeMasterClient(){
+        //Fetch original data
+        reversiManager.currentSide = (ReversiManager.Side)PhotonNetwork.CurrentRoom.CustomProperties["currentSide"];
+        if(reversiManager.currentSide != ReversiManager.Side.Black && reversiManager.currentSide != ReversiManager.Side.White){
+            reversiManager.currentSide = ReversiManager.Side.Black;
+        }
     }
 }

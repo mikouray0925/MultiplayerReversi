@@ -17,7 +17,7 @@ MonoBehaviour:
     AppIdFusion: 
     AppIdChat: 
     AppIdVoice: 
-    AppVersion: 
+    AppVersion: 0.1
     UseNameServer: 1
     FixedRegion: 
     Server: 
@@ -40,14 +40,14 @@ MonoBehaviour:
   - Fire
   - RespawnSpaceship
   - RpcChangeScene
-  - RpcUploadGameData
-  - RpcSomePlayerIsReady
-  - RpcStartGame
+  - RpcEndGame
   - RpcReceivePlaceChessAck
   - RpcReceivePlaceChessOrder
-  - RpcSendMsg
-  - RpcEndGame
   - RpcReturnToRoom
+  - RpcSendMsg
+  - RpcSomePlayerIsReady
+  - RpcStartGame
+  - RpcUploadGameData
   DisableAutoOpenWizard: 1
-  ShowSettings: 0
+  ShowSettings: 1
   DevRegionSetOnce: 1

@@ -2808,6 +2808,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isDebugging: 0
   isCanvasOn: 0
+  deleteAllPlayerPrefs: 0
   canvas: {fileID: 771910781}
   lastHintShowTime: 0
   roomManager: {fileID: 1116413972}
@@ -4023,7 +4024,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1723609084
 RectTransform:
   m_ObjectHideFlags: 0

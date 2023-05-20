@@ -163,6 +163,8 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
         if (!isMasterClient &&  PhotonNetwork.IsMasterClient) {
             onBecomeMasterClient.Invoke();
             isMasterClient = true;
+
+            reversiManager.OnBecomeMasterClient();
         }
         if (isMasterClient && !PhotonNetwork.IsMasterClient) {
             onNoLongerMasterClient.Invoke();
@@ -226,6 +228,7 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
     [PunRPC]
     private void RpcEndGame(PhotonMessageInfo info) {
         if (!PhotonNetwork.IsMasterClient) currentState = State.Preparing;
+
         //TODO add EndGame event
         //Achievement, Record, etc.
         //onGameEnded.Invoke();

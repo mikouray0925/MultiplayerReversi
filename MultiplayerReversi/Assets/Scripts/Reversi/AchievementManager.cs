@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using UnityEngine;
-
+using System.Text;
 class AchievementManager : MonoBehaviour{
     //<Summary>
     //Singleton class, only exist get method
@@ -15,16 +15,26 @@ class AchievementManager : MonoBehaviour{
     private static Dictionary<string, bool> AchievementProgress = new Dictionary<string, bool>();
     private void Awake(){
         Instance = this;
+        if(!ReadSave()){
+            foreach (var str in AchievementList)
+            {
+                AchievementProgress.Add(str, false);
+            }
+        }
     }
     public static AchievementManager Instance {get; private set;}
     internal void UnlockAchievement(string achievementName){
+        StringBuilder sb = new StringBuilder();
         if(AchievementList.Contains(achievementName)){
+            sb.Append("Achievement contains: " + achievementName);
             if(AchievementProgress[achievementName] == false) {
+                sb.Append("Achievement unlocked: " + achievementName);
                 AchievementProgress[achievementName] = true;
-                Debug.Log("Achievement unlocked: " + achievementName);
+                PunRoomChatManager.chatManager.systemMessage("Achievement Unlocked: " + achievementName);
                 //TODO show achievement unlocked
             }
         }
+        Debug.Log(sb.ToString());
     }
     internal void AddWinCount(){
         WinCount++;
@@ -55,15 +65,18 @@ class AchievementManager : MonoBehaviour{
 
     private static bool ReadSave(){
         if (!PlayerPrefs.HasKey("HasSave")) return false;
-        
-        foreach (var kvp in AchievementProgress)
+        Debug.Log("Read save success");
+        StringBuilder sb = new StringBuilder();
+        foreach (var str in AchievementList)
         {
-            AchievementProgress[kvp.Key] = PlayerPrefs.GetInt(kvp.Key) > 0;
+            AchievementProgress[str] = PlayerPrefs.GetInt(str) > 0;
+            sb.Append(str + " " + PlayerPrefs.GetInt(str) + "\n");
         }
         WinCount = PlayerPrefs.GetInt("WinCount");
         LoseCount = PlayerPrefs.GetInt("LoseCount");
         DrawCount = PlayerPrefs.GetInt("DrawCount");
         TotalGameCount = PlayerPrefs.GetInt("TotalGameCount");
+        Debug.Log(sb.ToString());
         return true;
     }
 
@@ -76,8 +89,20 @@ class AchievementManager : MonoBehaviour{
         return result;
     }
 
+    private void OnApplicationQuit() {
+        WriteSave();
+    }
+
+    public void deleteAllPlayerPrefs(){
+        foreach (var str in AchievementList)
+        {
+            PlayerPrefs.DeleteKey(str);
+        }
+        PlayerPrefs.DeleteKey("HasSave");
+    }
+
     private static List<string> AchievementList  = new List<string>(){
-            "Nice move",
+            "Nice Move",
             "Sheeeesh",
             "Huh? TF?",
             "Black King",
@@ -98,12 +123,12 @@ class AchievementHandler
     private static int WhiteChessCount = 0;
     public static void HandlePlaceChess(List<string> flankedChesses){
         if(flankedChesses.Count > 5) {
-            AchievementManager.Instance.UnlockAchievement("Nice move");
+            AchievementManager.Instance.UnlockAchievement("Nice Move");
         }
         if(flankedChesses.Count > 10) {
             AchievementManager.Instance.UnlockAchievement("Sheeeesh");
         }
-        if(flankedChesses.Count > 20) {
+        if(flankedChesses.Count > 15) {
             AchievementManager.Instance.UnlockAchievement("Huh? TF?");
         }
     }

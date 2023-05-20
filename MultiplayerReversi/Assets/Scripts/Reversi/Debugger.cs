@@ -11,6 +11,7 @@ public class Debugger : MonoBehaviour
     public static Debugger instance {get; private set;}
     public bool isDebugging = false;
     public bool isCanvasOn = false;
+    public bool deleteAllPlayerPrefs = false;
     public GameObject canvas;
 
     public double lastHintShowTime;
@@ -38,6 +39,10 @@ public class Debugger : MonoBehaviour
         }
         else if(isCanvasOn){
             debugText.text = getDebugMsg();
+        }
+        if(deleteAllPlayerPrefs){
+            AchievementManager.Instance.deleteAllPlayerPrefs();
+            deleteAllPlayerPrefs = false;
         }
     } 
 

@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 public class LobbyUIManager : MonoBehaviour
 {
+    [Header("Achievement")]
     public GameObject AchievementPanel;
     public GameObject AchievementPrefab;
     public GameObject Mask;
@@ -41,9 +42,8 @@ public class LobbyUIManager : MonoBehaviour
         {
             AchievementUnit unit = Instantiate(AchievementPrefab, AchievementPanel.transform).GetComponent<AchievementUnit>();
             AchievementList.Add(unit);
-            unit.LobbyUIManager = this;
-            unit.updateAchievement(achievement.Key, achievement.Value);
-            unit.GetComponentInChildren<Button>().onClick.AddListener(delegate{ShowInfo(AchievementDescription[achievement.Key]);});
+            unit.lobbyUIManager = this;
+            unit.updateAchievement(achievement.Key, achievement.Value, AchievementDescription[achievement.Key]);
         }
     }
 
@@ -62,6 +62,61 @@ public class LobbyUIManager : MonoBehaviour
 
     public void ShowInfo(string info)
     {
+        Debug.Log(info);
         InfoText.text = info;
+    }
+
+
+    [Header("How to Play")]
+    public GameObject HowToPlayPanel;
+    public GameObject Demo1;
+    public GameObject Demo2;
+    public GameObject Demo3;
+    public Button LeftButton;
+    public Button RightButton;
+    private int demoIndex = 1;
+    public void ShowHowToPlayPanel()
+    {
+        HowToPlayPanel.SetActive(true);
+        Mask.SetActive(true);
+        demoIndex = 1;
+        ShowDemo();
+    }
+    public void HideHowToPlayPanel()
+    {
+        HowToPlayPanel.SetActive(false);
+        Mask.SetActive(false);
+    }
+
+    public void NextDemo(){
+        demoIndex++;
+        if(demoIndex > 3){
+            demoIndex = 3;
+        }
+        ShowDemo();
+    }
+    public void PrevDemo(){
+        demoIndex--;
+        if(demoIndex < 1){
+            demoIndex = 1;
+        }
+        ShowDemo();
+    }
+
+    private void ShowDemo(){
+        Demo1.SetActive(false);
+        Demo2.SetActive(false);
+        Demo3.SetActive(false);
+        RightButton.interactable = true;
+        LeftButton.interactable = true;
+        if(demoIndex == 1){
+            Demo1.SetActive(true);
+            LeftButton.interactable = false;
+        }else if(demoIndex == 2){
+            Demo2.SetActive(true);
+        }else if(demoIndex == 3){
+            Demo3.SetActive(true);
+            RightButton.interactable = false;
+        }
     }
 }

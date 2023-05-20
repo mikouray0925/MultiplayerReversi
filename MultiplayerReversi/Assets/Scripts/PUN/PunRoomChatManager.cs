@@ -21,9 +21,12 @@ public class PunRoomChatManager : MonoBehaviourPunCallbacks
     private double lastMsgSendTime = 0;
     private LinkedList<GameObject> chatMsgList = new LinkedList<GameObject>();
     public PhotonView pv;
+    public static PunRoomChatManager chatManager;
 
     // Start is called before the first frame update
-
+    private void Awake(){
+        chatManager = this;
+    }
     private void Update(){
         if(Input.GetKeyDown(KeyCode.T) && !chatInput.isFocused){
             isTextboxOpen = !isTextboxOpen;
@@ -47,10 +50,16 @@ public class PunRoomChatManager : MonoBehaviourPunCallbacks
         if(chatInput.text != ""){
             //cooldown 250ms to prevent spam
             try{
+                if(chatInput.text[0] == '/') {
+                    string command = chatInput.text.Substring(1);
+                    if(command == "ClearAllFuckingPlayerPrefs") AchievementManager.Instance.deleteAllPlayerPrefs();
+                    chatInput.text = "";
+                    return;
+                }
                 if(chatInput.text.Length > 256) throw new Exception("Message too long, please keep it under 256 characters\nOnly you can see this message");
                 if(PhotonNetwork.Time - lastMsgSendTime < 0.25f) throw new Exception("You're sending messages too fast, please wait a bit\nOnly you can see this message");
                 SendMsgToAll(chatInput.text);
-                //chatInput.text = "";
+                chatInput.text = "";
                 lastMsgSendTime = PhotonNetwork.Time;
             }
             catch(Exception e){
@@ -64,6 +73,13 @@ public class PunRoomChatManager : MonoBehaviourPunCallbacks
                 }
             }
         }
+    }
+
+    public void systemMessage(string msg){
+        Text msgText = Instantiate(chatMsgPrefab, chatMsgContent).GetComponent<Text>();
+        msgText.text = msg;
+        chatMsgList.AddLast(msgText.gameObject);
+        isTextboxOpen = true;
     }
 
     private IEnumerator deleteWarningMessage(GameObject msg){
