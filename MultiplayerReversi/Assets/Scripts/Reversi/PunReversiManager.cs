@@ -22,16 +22,12 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         Paused, WaitingForAllReady, WaitingForOrder, End
     }
     public GameState currentState = GameState.Paused;
-
+    private double LastSlowUpdateTime = 0.0;
     // only for master
     public bool blackReady {get; private set;} = false;
     public bool whiteReady {get; private set;} = false;
     public bool placeChessAckReceived {get; private set;} = false;
     public bool gameResultChecked {get; private set;} = false;
-
-    //only for non-master
-
-    public double lastStateUpdateTime {get; private set;} = -1.0f;
 
     // for all
     public bool isPlayerReadySent {get; private set;} = false;
@@ -61,6 +57,8 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         propNeedToChange["currentSide"] = reversiManager.currentSide;
         propNeedToChange["blackActId"] = PhotonNetwork.LocalPlayer.ActorNumber;
         propNeedToChange["whiteActId"] = -1;
+        blackActIdCache = PhotonNetwork.LocalPlayer.ActorNumber;
+        whiteActIdCache = -1;
         propNeedToChange["lastUploadGameDataTime"] = -1.0;
 
         for (int row = 1; row <= 8; row++)
@@ -82,13 +80,33 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
 
     private void FixedUpdate()
     {
-        if (PhotonNetwork.InRoom && roomManager != null &&
-            (PunRoomManager.State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"] == PunRoomManager.State.Playing)
+        if(PhotonNetwork.Time - LastSlowUpdateTime > .2) {
+            if(!PhotonNetwork.IsMasterClient){
+                blackActIdCache = (int)PhotonNetwork.CurrentRoom.CustomProperties["blackActId"];
+                whiteActIdCache = (int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"];
+                if((PunRoomManager.State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"] == PunRoomManager.State.Playing) {
+                    currentState = (GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"];
+                }
+            }
+            LastSlowUpdateTime = PhotonNetwork.Time;
+        }
+        if (PhotonNetwork.InRoom && roomManager != null)
         {
-            if(TweenManager.instance.isPaused && currentState != GameState.Paused) TweenManager.instance.PlayGameResumeAnimation();
-            if (PhotonNetwork.IsMasterClient) DoMasterOnlyBusiness();
-            else DoNonMasterOnlyBusiness();
-            DoCommonBusiness();
+            if(PhotonNetwork.IsMasterClient &&
+            (PunRoomManager.State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"] == PunRoomManager.State.Preparing ){
+                FillEmptyPlayer();
+                PhotonHashtable propNeedToChange = new PhotonHashtable();
+                propNeedToChange["blackActId"] = blackActIdCache;
+                propNeedToChange["whiteActId"] = whiteActIdCache;
+                roomManager.ChangeCustomProperties(propNeedToChange);
+            }
+            if((PunRoomManager.State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"] == PunRoomManager.State.Playing){
+                if(TweenManager.instance.isPaused && currentState != GameState.Paused) TweenManager.instance.PlayGameResumeAnimation();
+                if (PhotonNetwork.IsMasterClient) DoMasterOnlyBusiness();
+                else DoNonMasterOnlyBusiness();
+                DoCommonBusiness();
+            }
+            
         }
     }
 
@@ -112,9 +130,9 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
             else
             {
                 currentState = GameState.Paused;
-                if(BlackPlayer == null) propNeedToChange["blackActId"] = -1;
-                if(WhitePlayer == null) propNeedToChange["whiteActId"] = -1;
-                FillEmptyPlayer(ref propNeedToChange);
+                if(BlackPlayer == null) blackActIdCache = -1;
+                if(WhitePlayer == null) whiteActIdCache = -1;
+                FillEmptyPlayer();
             }
         }
         if (gameState == GameState.WaitingForAllReady)
@@ -170,6 +188,8 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
 
         propNeedToChange["gameState"] = currentState;
         propNeedToChange["currentSide"] = reversiManager.currentSide;
+        propNeedToChange["blackActId"] = blackActIdCache;
+        propNeedToChange["whiteActId"] = whiteActIdCache;
         roomManager.ChangeCustomProperties(propNeedToChange);
         CallMasterUploadGameData();
     }
@@ -184,10 +204,6 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         if(currentState == GameState.Paused && (GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"] != GameState.Paused)
         {
             OnPausedToWaitingForAllReady();
-        }
-        if(PhotonNetwork.Time - lastStateUpdateTime > 0.1) {
-            currentState = (GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"];
-            lastStateUpdateTime = PhotonNetwork.Time;
         }
         reversiManager.currentSide = (ReversiManager.Side)PhotonNetwork.CurrentRoom.CustomProperties["currentSide"];
     }
@@ -295,29 +311,29 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         }
     }
 
-    private void FillEmptyPlayer(ref PhotonHashtable propNeedToChangeBuffer)
+    private void FillEmptyPlayer()
     {
         if (PhotonNetwork.CurrentRoom.PlayerCount >= 2)
         {
-            if ((int)PhotonNetwork.CurrentRoom.CustomProperties["blackActId"] == -1)
+            if (blackActIdCache == -1)
             {
                 foreach (var kvp in PhotonNetwork.CurrentRoom.Players)
                 {
-                    if (kvp.Value.ActorNumber != (int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"])
+                    if (kvp.Value.ActorNumber != whiteActIdCache)
                     {
-                        propNeedToChangeBuffer["blackActId"] = kvp.Value.ActorNumber;
+                        blackActIdCache = kvp.Value.ActorNumber;
                         break;
                     }
                 }
                 
             }
-            else if ((int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"] == -1)
+            else if (whiteActIdCache == -1)
             {
                 foreach (var kvp in PhotonNetwork.CurrentRoom.Players)
                 {
-                    if (kvp.Value.ActorNumber != (int)PhotonNetwork.CurrentRoom.CustomProperties["blackActId"])
+                    if (kvp.Value.ActorNumber != blackActIdCache)
                     {
-                        propNeedToChangeBuffer["whiteActId"] = kvp.Value.ActorNumber;
+                        whiteActIdCache = kvp.Value.ActorNumber;
                         break;
                     }
                 }
@@ -504,15 +520,16 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         CallMasterUploadGameData();
     }
 
+    public int blackActIdCache, whiteActIdCache;
+
     public Player BlackPlayer
     {
         get
         {
             if (PhotonNetwork.InRoom && roomManager)
             {
-                int actorId = (int)PhotonNetwork.CurrentRoom.CustomProperties["blackActId"];
-                if (actorId < 1) return null;
-                if (roomManager.players.TryGetValue(actorId, out Player player))
+                if (blackActIdCache < 1) return null;
+                if (roomManager.players.TryGetValue(blackActIdCache, out Player player))
                 {
                     return player;
                 }
@@ -528,9 +545,8 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         {
             if (PhotonNetwork.InRoom && roomManager)
             {
-                int actorId = (int)PhotonNetwork.CurrentRoom.CustomProperties["whiteActId"];
-                if (actorId < 1) return null;
-                if (roomManager.players.TryGetValue(actorId, out Player player))
+                if (whiteActIdCache < 1) return null;
+                if (roomManager.players.TryGetValue(whiteActIdCache, out Player player))
                 {
                     return player;
                 }
@@ -538,5 +554,19 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
             }
             else return null;
         }
+    }
+
+    public void SwitchPlayerSide(){
+        StringBuilder sb = new StringBuilder();
+        sb.Append("Switch Player Side Callback activated, Timestamp: " + PhotonNetwork.Time + "\n");
+        if(PhotonNetwork.IsMasterClient){
+            sb.Append("Passed Master Client Check\n");
+            int temp = blackActIdCache;
+            blackActIdCache = whiteActIdCache;
+            whiteActIdCache = temp;
+            sb.Append("New blackActId: " + whiteActIdCache + "\n");
+            sb.Append("New whiteActId: " + temp + "\n");
+        }
+        Debug.Log(sb.ToString());
     }
 }

@@ -70,6 +70,31 @@ public class Debugger : MonoBehaviour
             sb = sb.Append("PhotonNetwork.CurrentRoom.MaxPlayers: ").Append(PhotonNetwork.CurrentRoom.MaxPlayers).Append("\n");
             sb = sb.Append("PhotonNetwork.CurrentRoom.IsOpen: ").Append(PhotonNetwork.CurrentRoom.IsOpen).Append("\n");
 
+            sb = sb.Append("\nStates: \n");
+            sb.Append("\n").Append("CurrentSide: ").Append(reversiManager.currentSide).Append("\n");
+            sb.Append("BlackPlayer: ").Append(punReversiManager.BlackPlayer).Append("\n");
+            sb.Append("WhitePlayer: ").Append(punReversiManager.WhitePlayer).Append("\n");
+            sb.Append("Black Act ID cache: ").Append(punReversiManager.blackActIdCache).Append("\n");
+            sb.Append("White Act ID cache: ").Append(punReversiManager.whiteActIdCache).Append("\n");
+            sb.Append("isMasterClient: ").Append(PhotonNetwork.IsMasterClient).Append("\n");
+            sb.Append("Master Client ID:").Append(PhotonNetwork.MasterClient).Append("\n");
+
+            //get this client's side
+            sb.Append("MySide: ").Append(PhotonNetwork.LocalPlayer).Append("\n");
+            sb = sb.Append("Room State: ").Append((PunRoomManager.State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"]).Append("\n");
+            if(PhotonNetwork.CurrentRoom.CustomProperties.TryGetValue("gameState",out var s1))
+            sb = sb.Append("Game State: ").Append((PunRoomManager.GameState)s1).Append("\n");
+            sb = sb.Append("Game State Local: ").Append(punReversiManager.currentState).Append("\n");
+            sb = sb.Append("Black Ready: ").Append(punReversiManager.blackReady).Append("\n");
+            sb = sb.Append("White Ready: ").Append(punReversiManager.whiteReady).Append("\n");
+
+
+            sb = sb.Append("Place Chess Ack Received: ").Append(punReversiManager.placeChessAckReceived).Append("\n");
+            sb = sb.Append("No Chess is Flipping: ").Append(reversiManager.NoChessIsFlipping()).Append("\n");
+            sb = sb.Append("Is Player Ready Sent: ").Append(punReversiManager.isPlayerReadySent).Append("\n");
+            sb = sb.Append("Is Board Data Loaded: ").Append(punReversiManager.boardDataLoaded).Append("\n");
+            sb = sb.Append("Is Hint Updated: ").Append(punReversiManager.isHintUpdated).Append("\n");
+
             if(roomManager.currentState != PunRoomManager.State.Playing) return sb.ToString();
             
             sb = sb.Append("\nBoard: \n");
@@ -96,28 +121,7 @@ public class Debugger : MonoBehaviour
                 }
                 sb.Append("\n");
             }
-            sb = sb.Append("\nStates: \n");
-            sb.Append("\n").Append("CurrentSide: ").Append(reversiManager.currentSide).Append("\n");
-            sb.Append("BlackPlayer: ").Append(punReversiManager.BlackPlayer).Append("\n");
-            sb.Append("WhitePlayer: ").Append(punReversiManager.WhitePlayer).Append("\n");
-            sb.Append("isMasterClient: ").Append(PhotonNetwork.IsMasterClient).Append("\n");
-            sb.Append("Master Client ID:").Append(PhotonNetwork.MasterClient).Append("\n");
-
-            //get this client's side
-            sb.Append("MySide: ").Append(PhotonNetwork.LocalPlayer).Append("\n");
-            sb = sb.Append("Room State: ").Append((PunRoomManager.State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"]).Append("\n");
-            if(PhotonNetwork.CurrentRoom.CustomProperties.TryGetValue("gameState",out var s1))
-            sb = sb.Append("Game State: ").Append((PunRoomManager.GameState)s1).Append("\n");
-            sb = sb.Append("Game State Local: ").Append(punReversiManager.currentState).Append("\n");
-            sb = sb.Append("Black Ready: ").Append(punReversiManager.blackReady).Append("\n");
-            sb = sb.Append("White Ready: ").Append(punReversiManager.whiteReady).Append("\n");
-
-
-            sb = sb.Append("Place Chess Ack Received: ").Append(punReversiManager.placeChessAckReceived).Append("\n");
-            sb = sb.Append("No Chess is Flipping: ").Append(reversiManager.NoChessIsFlipping()).Append("\n");
-            sb = sb.Append("Is Player Ready Sent: ").Append(punReversiManager.isPlayerReadySent).Append("\n");
-            sb = sb.Append("Is Board Data Loaded: ").Append(punReversiManager.boardDataLoaded).Append("\n");
-            sb = sb.Append("Is Hint Updated: ").Append(punReversiManager.isHintUpdated).Append("\n");
+            
             
             //_ReversiManager.syncBoardwithLocalData();
             return sb.ToString();

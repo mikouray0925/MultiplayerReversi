@@ -12,11 +12,17 @@ using System;
 public class PunRoomManager : MonoBehaviourPunCallbacks
 {
     [Header("UI")]
+    public GameObject roomUI;
     public Text roomNameText;
-
+    public Text blackPlayerNameText;
+    public Text whitePlayerNameText;
+    public Text blackIsHostText;
+    public Text whiteIsHostText;
     [Header ("Component")]
     public PunSceneController sceneController;
     public PunRoomChatManager chatManager;
+    //ONLY get component after initial, don't set reference in inspector
+    private PunReversiManager reversiManager;
 
     [Header ("Event")]
     public UnityEvent onInitRoom;
@@ -59,8 +65,6 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
 
     private void Start() {
         if (PhotonNetwork.InRoom) {
-            UpdateUI();
-            UpdatePlayerList();
             if (PhotonNetwork.IsMasterClient) {
                 isMasterClient = true;
                 onBecomeMasterClient.Invoke();
@@ -79,6 +83,9 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
                     onEnterPlayingRoom.Invoke();
                 }
             }
+            reversiManager = GetComponent<PunReversiManager>();
+            UpdatePlayerList();
+            UpdateUI();
         }
     }
 
@@ -99,7 +106,43 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
     }
 
     public void UpdateUI() {
-        if (roomNameText.IsActive()) roomNameText.text = PhotonNetwork.CurrentRoom.Name;
+        // If UI is active then update
+        if (roomUI.activeSelf) {
+            roomNameText.text = PhotonNetwork.CurrentRoom.Name;
+
+            if(reversiManager.BlackPlayer != null) {
+                if(reversiManager.BlackPlayer.NickName != "")
+                    blackPlayerNameText.text = reversiManager.BlackPlayer.NickName;
+                else blackPlayerNameText.text = "Player " + reversiManager.BlackPlayer.ActorNumber.ToString();
+                if(reversiManager.BlackPlayer.IsLocal)  blackPlayerNameText.text += " (You)";
+
+                if(PhotonNetwork.MasterClient.ActorNumber == reversiManager.BlackPlayer.ActorNumber) {
+                    blackIsHostText.text = "Host";
+                }
+                else blackIsHostText.text = "";
+
+            }
+            else {
+                blackPlayerNameText.text = "Waiting...";
+                blackIsHostText.text = "";
+            }
+
+            if(reversiManager.WhitePlayer != null) {
+                if(reversiManager.WhitePlayer.NickName != "")
+                    whitePlayerNameText.text = reversiManager.WhitePlayer.NickName;
+                else whitePlayerNameText.text = "Player " + reversiManager.WhitePlayer.ActorNumber.ToString();
+                if(reversiManager.WhitePlayer.IsLocal)  whitePlayerNameText.text += " (You)";
+
+                if(PhotonNetwork.MasterClient.ActorNumber == reversiManager.WhitePlayer.ActorNumber) {
+                    whiteIsHostText.text = "Host";
+                }
+                else whiteIsHostText.text = "";
+            }
+            else {
+                whitePlayerNameText.text = "Waiting...";
+                whiteIsHostText.text = "";
+            }
+        }
     }
 
     public void UpdatePlayerList() {
@@ -111,8 +154,11 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
         }
         onPlayerListUpdate.Invoke();
     }
-
-    
+    public void SwitchMasterClient() {
+        if (PhotonNetwork.IsMasterClient) {
+            if(players.Count>1) PhotonNetwork.SetMasterClient(PhotonNetwork.PlayerListOthers[0]);
+        }
+    }    
     public override void OnMasterClientSwitched(Player newMasterClient) {
         if (!isMasterClient &&  PhotonNetwork.IsMasterClient) {
             onBecomeMasterClient.Invoke();
@@ -174,18 +220,14 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
 
     public void CallEndGameToAll() {
         if (!PhotonNetwork.IsMasterClient) return;
-        if ( ableToStartGame == null ||
-            (ableToStartGame != null && ableToStartGame())) {
-            PhotonHashtable propNeedToChange = new PhotonHashtable();
-            currentState = State.Preparing;
-            propNeedToChange["roomState"] = currentState;
-            ChangeCustomProperties(propNeedToChange);
-            pv.RPC("RpcEndGame", RpcTarget.All);
-            //TODO: add onMasterEndGame event
-            //onMasterEndGame.Invoke();
-        }
+        PhotonHashtable propNeedToChange = new PhotonHashtable();
+        currentState = State.Preparing;
+        propNeedToChange["roomState"] = currentState;
+        ChangeCustomProperties(propNeedToChange);
+        pv.RPC("RpcEndGame", RpcTarget.All);
+        //TODO: add onMasterEndGame event
+        //onMasterEndGame.Invoke();
     }
-
 
     public void ChangeCustomProperties(PhotonHashtable propertiesNeedToChange) {
         if (isMasterClient) {
