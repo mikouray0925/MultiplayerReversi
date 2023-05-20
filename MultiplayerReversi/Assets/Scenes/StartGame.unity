@@ -1226,6 +1226,7 @@ GameObject:
   - component: {fileID: 1741901601}
   - component: {fileID: 1741901603}
   - component: {fileID: 1741901604}
+  - component: {fileID: 1741901605}
   m_Layer: 0
   m_Name: GlobalManager
   m_TagString: Untagged
@@ -1306,6 +1307,18 @@ MonoBehaviour:
   inquirerCanvas: {fileID: 2098058267}
   stringInquirerPrefab: {fileID: 4024065048464007704, guid: 359812dda33ee884789e060246e944ea, type: 3}
   boolInquirerPrefab: {fileID: 1807670485946122508, guid: 3ddf1c7ed6c2494449b6ddde929fc7a8, type: 3}
+--- !u!114 &1741901605
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1741901599}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d40aa40a2d6d97d4a9e04f5738fae9c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1815934737
 GameObject:
   m_ObjectHideFlags: 0

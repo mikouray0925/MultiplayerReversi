@@ -14,12 +14,7 @@ class AchievementManager : MonoBehaviour{
     private static int TotalGameCount;
     private static Dictionary<string, bool> AchievementProgress = new Dictionary<string, bool>();
     private void Awake(){
-        if (TryGetComponent<AchievementManager>(out AchievementManager _instance)){
-            Instance = _instance;
-        }
-        else {
-            Instance = gameObject.AddComponent<AchievementManager>();
-        }
+        Instance = this;
     }
     public static AchievementManager Instance {get; private set;}
     internal void UnlockAchievement(string achievementName){
