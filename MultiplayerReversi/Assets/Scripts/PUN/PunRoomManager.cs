@@ -35,7 +35,7 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
     public UnityEvent onMasterStartGame;
     public UnityEvent onGameStarted;
     public UnityEvent onEnterPlayingRoom;
-    public UnityEvent onGameEnded;
+    public UnityEvent onReturnToRoom;
 
     public Dictionary<int, Player> players {get; private set;} = new Dictionary<int, Player>();
     public bool isMasterClient {get; private set;} = false;
@@ -206,8 +206,21 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
         currentState = State.Playing;
         onGameStarted.Invoke();
     }
+    
+    [PunRPC]
+    private void RpcReturnToRoom(PhotonMessageInfo info) {
+        currentState = State.Preparing;
+        if (PhotonNetwork.IsMasterClient) {
+            PhotonHashtable propNeedToChange = new PhotonHashtable();
+            propNeedToChange["roomState"] = currentState;
+            ChangeCustomProperties(propNeedToChange);
+        }
+        onReturnToRoom.Invoke();
+    }
 
-
+    public void CallReturnToRoomToAll() {
+        pv.RPC("RpcReturnToRoom", RpcTarget.All);
+    }
 
     [PunRPC]
     private void RpcEndGame(PhotonMessageInfo info) {
@@ -215,7 +228,6 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
         //TODO add EndGame event
         //Achievement, Record, etc.
         //onGameEnded.Invoke();
-
     }
 
     public void CallEndGameToAll() {
