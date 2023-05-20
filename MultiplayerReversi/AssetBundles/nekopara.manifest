@@ -1,0 +1,21 @@
+ManifestFileVersion: 0
+CRC: 3704638509
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 985c2d007e74939c36b4c82c3ec77ef6
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: f9f3d136959ac0e7043e721e899342fb
+HashAppended: 0
+ClassTypes:
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/Resources/Materials/AssetBundleFolder/NekoPara.mat
+Dependencies: []

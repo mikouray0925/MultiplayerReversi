@@ -1,8 +1,10 @@
 fileFormatVersion: 2
-guid: e6966891fb5ff4d47a194ef4ac2ce6c0
+guid: 4557ace9e22ded7488eca0f55cd416a9
+labels:
+- Material
 NativeFormatImporter:
   externalObjects: {}
   mainObjectFileID: 2100000
   userData: 
-  assetBundleName: 
+  assetBundleName: nekopara
   assetBundleVariant: 
