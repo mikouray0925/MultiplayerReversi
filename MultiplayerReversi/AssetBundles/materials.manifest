@@ -1,0 +1,41 @@
+ManifestFileVersion: 0
+CRC: 3639721131
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 591130d5e73c591cfc89f4f5b6c8e4d9
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 9f038e2107905ee470a690157f0621b1
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 23
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 33
+  Script: {instanceID: 0}
+- Class: 43
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 64
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/Resources/Materials/AssetBundleFolder/TakoDachi.mat
+- Assets/Resources/Materials/AssetBundleFolder/Patrick.mat
+- Assets/Resources/Materials/AssetBundleFolder/TakoDachi.prefab
+- Assets/Resources/Materials/AssetBundleFolder/NekoPara.prefab
+- Assets/Resources/Materials/AssetBundleFolder/NekoPara.png
+- Assets/Resources/Materials/AssetBundleFolder/NekoPara.mat
+- Assets/Resources/Materials/AssetBundleFolder/TakoDachi.png
+- Assets/Resources/Materials/AssetBundleFolder/Patrick.jpg
+- Assets/Resources/Materials/AssetBundleFolder/Patrick.prefab
+Dependencies: []

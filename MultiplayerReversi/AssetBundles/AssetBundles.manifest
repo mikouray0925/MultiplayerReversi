@@ -1,13 +1,7 @@
 ManifestFileVersion: 0
-CRC: 3642955233
+CRC: 2759465642
 AssetBundleManifest:
   AssetBundleInfos:
     Info_0:
-      Name: patrick
-      Dependencies: {}
-    Info_1:
-      Name: nekopara
-      Dependencies: {}
-    Info_2:
-      Name: takodachi
+      Name: materials
       Dependencies: {}

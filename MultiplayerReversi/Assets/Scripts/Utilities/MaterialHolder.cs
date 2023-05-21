@@ -3,29 +3,39 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEditor;
+using System.Text;
+using UnityEngine.UI;
 public class MaterialHolder : MonoBehaviour
 {
-    MaterialHolder instance;
+    public static MaterialHolder instance;
     public string BundleURL;
     public string AssetName;
     public int version;
-
     void Awake()
     {
         instance = this;
         StartCoroutine(DownloadMaterials(AssetName, BundleURL, version));
     }
-    public Dictionary<string, Material> materials = new Dictionary<string, Material>();
-
-    public bool LoadMaterialsFromAssetBundle(AssetBundle assetBundle){
+    public Dictionary<string, GameObject> Prefabs = new Dictionary<string, GameObject>();
+    public Dictionary<string, Sprite> Sprites = new Dictionary<string, Sprite>();
+    public List<string> Names = new List<string>();
+    public int MaterialCount;
+    public bool LoadFromAssetBundle(AssetBundle assetBundle){
         if(assetBundle != null){
-            Material[] mats = assetBundle.LoadAllAssets<Material>();
-            foreach(Material mat in mats){
-                materials.Add(mat.name, mat);
+            // Load all prefabs
+            Prefabs.Clear();
+            GameObject[] prefab = assetBundle.LoadAllAssets<GameObject>();
+            foreach(GameObject p in prefab){
+                Prefabs.Add(p.name, p);
+                Debug.Log("Load prefab " + p.name + " successfully");
+                Names.Add(p.name);
             }
-            assetBundle.Unload(true);
-            foreach(KeyValuePair<string, Material> mat in materials){
-                Debug.Log(mat.Key);
+            // Load all textures
+            Sprites.Clear();
+            Texture2D[] texture = assetBundle.LoadAllAssets<Texture2D>();
+            foreach(Texture2D t in texture){
+                Sprites[t.name] = Sprite.Create(t, new Rect(0, 0, t.width, t.height), new Vector2(0.5f, 0.5f));
+                Debug.Log("Load texture " + t.name + " successfully");
             }
             return true;
         }
@@ -33,14 +43,10 @@ public class MaterialHolder : MonoBehaviour
     }
     public IEnumerator DownloadMaterials(string asset, string url, int version){
 #if UNITY_EDITOR
-        string path = Application.dataPath + "/../AssetBundles/";
-        AssetBundle assetBundle = AssetBundle.LoadFromFile(path + "AssetBundles");
-        AssetBundleManifest manifest = assetBundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
-        string[] dependencies = manifest.GetAllDependencies("AssetBundles"); //Pass the name of the bundle you want the dependencies for.
-        foreach(string dependency in dependencies){
-            AssetBundle bundle = AssetBundle.LoadFromFile(path + dependency);
-            LoadMaterialsFromAssetBundle(bundle);
-        }
+        string path = Application.dataPath + "/../AssetBundles/materials";
+        AssetBundle assetBundle = AssetBundle.LoadFromFile(path);
+        if(LoadFromAssetBundle(assetBundle)) Debug.Log("Load asset bundle" + asset + "successfully");
+        else Debug.Log("Load asset bundle" + asset + "failed");
         yield return null;
 #else
         // Wait for the Caching system to be ready
@@ -52,9 +58,15 @@ public class MaterialHolder : MonoBehaviour
             yield return www;
             if (www.error != null)
                 throw new System.Exception("WWW download:" + www.error);
-            LoadMaterialsFromAssetBundle(DownloadHandlerAssetBundle.GetContent(www));
+            LoadFromAssetBundle(DownloadHandlerAssetBundle.GetContent(www));
 
         } // memory is freed from the web stream (www.Dispose() gets called implicitly)
 #endif
+    }
+    public GameObject getPrefab(int index){
+        return Prefabs[Names[index]];
+    }
+    public Sprite getSprite(int index){
+        return Sprites[Names[index]];
     }
 }

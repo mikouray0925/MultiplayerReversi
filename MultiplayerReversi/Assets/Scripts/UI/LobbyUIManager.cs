@@ -34,6 +34,7 @@ public class LobbyUIManager : MonoBehaviour
         {"Winner", "Win a game"}
     };
     public Text InfoText;
+    public GameObject InfoTextBG;
     public void Awake()
     {
         AchievementPanel.SetActive(false);
@@ -45,19 +46,35 @@ public class LobbyUIManager : MonoBehaviour
             unit.lobbyUIManager = this;
             unit.updateAchievement(achievement.Key, achievement.Value, AchievementDescription[achievement.Key]);
         }
+        UpdateStats();
     }
 
     public void ShowAchievementPanel()
     {
+        InfoTextBG.GetComponent<Image>().color = new Color(0,1,0.7921f,0);
         AchievementPanel.SetActive(true);
         Mask.SetActive(true);
+        LeanTween.alpha(Mask.GetComponent<RectTransform>(), 1f, 0.2f).setEaseOutSine();
         InfoText.text = "";
+        LeanTween.alpha(InfoTextBG.GetComponent<RectTransform>(), 1f, 0.5f).setEaseOutSine();
+        foreach(var achievement in AchievementList)
+        {
+            achievement.FadeIn();
+        }
     }
 
     public void HideAchievementPanel()
     {
-        AchievementPanel.SetActive(false);
-        Mask.SetActive(false);
+        InfoText.text = "";
+        foreach(var achievement in AchievementList)
+        {
+            achievement.FadeOut();
+        }
+        LeanTween.alpha(InfoTextBG.GetComponent<RectTransform>(), 0f, 0.5f).setEaseOutSine();
+        LeanTween.alpha(Mask.GetComponent<RectTransform>(), 0f, 0.55f).setEaseOutSine().setOnComplete(delegate(){
+            AchievementPanel.SetActive(false);
+            Mask.SetActive(false);
+        });
     }
 
     public void ShowInfo(string info)
@@ -77,15 +94,33 @@ public class LobbyUIManager : MonoBehaviour
     private int demoIndex = 1;
     public void ShowHowToPlayPanel()
     {
-        HowToPlayPanel.SetActive(true);
-        Mask.SetActive(true);
-        demoIndex = 1;
+        demoIndex = 0;
         ShowDemo();
+        HowToPlayPanel.transform.localScale = new Vector3(0.01f, 0.01f, 1);
+        HowToPlayPanel.SetActive(true);
+        LeftButton.gameObject.SetActive(false);
+        RightButton.gameObject.SetActive(false);
+        LeanTween.scaleX(HowToPlayPanel, 1, 0.3f).setEaseOutBack();
+        LeanTween.scaleY(HowToPlayPanel, 1, 0.3f).setEaseOutBack().setDelay(0.35f).setOnComplete(delegate(){
+            LeftButton.gameObject.SetActive(true);
+            RightButton.gameObject.SetActive(true);
+            demoIndex = 1;
+            ShowDemo();
+        });
+        Mask.SetActive(true);
+        
     }
     public void HideHowToPlayPanel()
     {
-        HowToPlayPanel.SetActive(false);
-        Mask.SetActive(false);
+        LeftButton.gameObject.SetActive(false);
+        RightButton.gameObject.SetActive(false);
+        demoIndex = 0;
+        ShowDemo();
+        LeanTween.scaleX(HowToPlayPanel, 0.01f, 0.2f).setEaseOutBack();
+        LeanTween.scaleY(HowToPlayPanel, 0.01f, 0.2f).setEaseOutBack().setDelay(0.25f).setOnComplete(delegate(){
+            HowToPlayPanel.SetActive(false);
+            Mask.SetActive(false);
+        });
     }
 
     public void NextDemo(){
@@ -118,5 +153,18 @@ public class LobbyUIManager : MonoBehaviour
             Demo3.SetActive(true);
             RightButton.interactable = false;
         }
+    }
+
+    [Header("Stats")]
+    public GameObject StatsPanel;
+    public Text StatsText;
+    public void UpdateStats(){
+        string stats = "";
+        stats += "Total Games Played: " + PlayerPrefs.GetInt("TotalGameCount", 0) + "\n";
+        stats += "Total Games Won: " + PlayerPrefs.GetInt("WinCount", 0) + "\n";
+        stats += "Total Games Lost: " + PlayerPrefs.GetInt("LoseCount", 0) + "\n";
+        stats += "Total Games Draw: " + PlayerPrefs.GetInt("DrawCount", 0) + "\n";
+        stats += "Win Ratio: " +  (PlayerPrefs.GetInt("TotalGameCount", 0) == 0 ? "N/A" : ((float)PlayerPrefs.GetInt("WinCount", 0) / (float)PlayerPrefs.GetInt("TotalGameCount", 0) * 100f).ToString("F2")) + "%\n";
+        StatsText.text = stats;
     }
 }

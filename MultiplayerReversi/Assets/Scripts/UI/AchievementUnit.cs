@@ -33,5 +33,14 @@ public class AchievementUnit : MonoBehaviour
         });
     }
 
-    
+    public void FadeIn(){
+        button.gameObject.GetComponent<Image>().color = new Color(1,1,1,0);
+        gameObject.GetComponent<Image>().color = new Color(1,1,1,0);
+        LeanTween.alpha(button.gameObject.GetComponent<RectTransform>(), 1, 0.5f).setEaseOutBack();
+        LeanTween.alpha(gameObject.GetComponent<RectTransform>(), 1, 0.5f).setEaseOutBack();
+    }
+    public void FadeOut(){
+        LeanTween.alpha(button.gameObject.GetComponent<RectTransform>(), 0, 0.55f).setEaseOutBack();
+        LeanTween.alpha(gameObject.GetComponent<RectTransform>(), 0, 0.55f).setEaseOutBack();
+    }
 }

@@ -18,6 +18,10 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
     public Text whitePlayerNameText;
     public Text blackIsHostText;
     public Text whiteIsHostText;
+    public int BoardTexNumber = 0;
+    public GameObject BoardTex;
+    public GameObject Board;
+    public Image BoardImageDemo;
     [Header ("Component")]
     public PunSceneController sceneController;
     public PunRoomChatManager chatManager;
@@ -83,9 +87,11 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
                     onEnterPlayingRoom.Invoke();
                 }
             }
+
             reversiManager = GetComponent<PunReversiManager>();
             UpdatePlayerList();
             UpdateUI();
+            BoardTexButtonCallback(0);
         }
     }
 
@@ -145,6 +151,12 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
         }
     }
 
+    public void BoardTexButtonCallback(int i){
+        BoardTexNumber += i;
+        if(BoardTexNumber < 0) BoardTexNumber = 2;
+        if(BoardTexNumber > 2) BoardTexNumber = 0;
+        BoardImageDemo.sprite = MaterialHolder.instance.getSprite(BoardTexNumber);
+    }
     public void UpdatePlayerList() {
         players.Clear();
         if (PhotonNetwork.CurrentRoom != null) {
@@ -207,12 +219,14 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
     private void RpcStartGame(PhotonMessageInfo info) {
         currentState = State.Playing;
         onGameStarted.Invoke();
+        BoardTex = Instantiate(MaterialHolder.instance.getPrefab(BoardTexNumber), new Vector3(0,0.249f,0), Quaternion.identity,Board.transform);
     }
     
     [PunRPC]
     private void RpcReturnToRoom(PhotonMessageInfo info) {
         currentState = State.Preparing;
         TweenManager.instance.ClearGameEndAnimation();
+        Destroy(BoardTex);
         if (PhotonNetwork.IsMasterClient) {
             PhotonHashtable propNeedToChange = new PhotonHashtable();
             propNeedToChange["roomState"] = currentState;

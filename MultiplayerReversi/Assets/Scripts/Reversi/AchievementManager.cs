@@ -24,29 +24,29 @@ class AchievementManager : MonoBehaviour{
     }
     public static AchievementManager Instance {get; private set;}
     internal void UnlockAchievement(string achievementName){
-        StringBuilder sb = new StringBuilder();
         if(AchievementList.Contains(achievementName)){
-            sb.Append("Achievement contains: " + achievementName);
             if(AchievementProgress[achievementName] == false) {
-                sb.Append("Achievement unlocked: " + achievementName);
                 AchievementProgress[achievementName] = true;
                 PunRoomChatManager.chatManager.systemMessage("Achievement Unlocked: " + achievementName);
+                WriteSave();
                 //TODO show achievement unlocked
             }
         }
-        Debug.Log(sb.ToString());
     }
     internal void AddWinCount(){
         WinCount++;
         TotalGameCount++;
+        WriteSave();
     }
     internal void AddLoseCount(){
         LoseCount++;
         TotalGameCount++;
+        WriteSave();
     }
     internal void AddDrawCount(){
         DrawCount++;
         TotalGameCount++;
+        WriteSave();
     }
     private static void WriteSave(){
         //TODO export data to file
