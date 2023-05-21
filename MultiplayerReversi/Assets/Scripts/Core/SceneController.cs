@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
 public class SceneController : MonoBehaviour
@@ -8,6 +9,10 @@ public class SceneController : MonoBehaviour
     public static SceneController instance {get; private set;}
     public GameObject globalManager;
     public HashSet<GameObject> objNeedToKeep = new HashSet<GameObject>();
+
+    [Header ("Events")]
+    public UnityEvent onChangingStart;
+    public UnityEvent onChangingFinish;
 
     public bool isChangingScene {get; private set;}
     public float changineSceneProgress {get; private set;}
@@ -48,6 +53,7 @@ public class SceneController : MonoBehaviour
     IEnumerator ChangingSceneCoroutine(string sceneName, Callback onChangingFinish) {
         isChangingScene = true;
         Debug.Log("Change to scene: " + sceneName);
+        this.onChangingStart.Invoke();
 
         Scene currentScene = SceneManager.GetActiveScene();
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
@@ -66,6 +72,7 @@ public class SceneController : MonoBehaviour
         SceneManager.UnloadSceneAsync(currentScene);
         isChangingScene = false;
 
+        this.onChangingFinish.Invoke();
         if (onChangingFinish != null) onChangingFinish();
     }
 }
