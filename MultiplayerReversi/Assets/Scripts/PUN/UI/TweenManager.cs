@@ -12,7 +12,7 @@ public class TweenManager : MonoBehaviour
     public static TweenManager instance;
     public Image background;
     public GameObject returnButton;
-    bool isPlayingEndAnimation = false;
+    public bool isPlayingEndAnimation = false;
     Rect screenSize;
 
     [Header("Debug")]
@@ -73,8 +73,24 @@ public class TweenManager : MonoBehaviour
         LeanTween.moveY(returnButton,(screenSize.yMin + screenSize.yMax) * 0.15f,1f).setEaseInSine().setDelay(2f);
     }
 
+    [Header("Tie")]
+    public GameObject TieGameParent;
+
+    public void PlayTieAnimation(){
+        if(isPlayingEndAnimation) return;
+        isPlayingEndAnimation = true;
+
+        TieGameParent.transform.position = new Vector3((screenSize.xMin + screenSize.xMax)/2 ,screenSize.yMax + 200,0);
+        returnButton.transform.position = new Vector3((screenSize.xMin + screenSize.xMax)/2 ,screenSize.yMin - 100,0);
+
+        LeanTween.alpha(background.rectTransform, 0.5f, 1f).setEaseInSine();
+        TieGameParent.SetActive(true);
+        LeanTween.moveY(TieGameParent, (screenSize.yMin + screenSize.yMax) * 0.6f, 2f).setEaseOutBounce();
+        returnButton.SetActive(true);
+        LeanTween.moveY(returnButton,(screenSize.yMin + screenSize.yMax) * 0.15f,1f).setEaseInSine().setDelay(2f);
+    }
+
     public void ClearGameEndAnimation(){
-        isPlayingEndAnimation = false;
         isPaused = false;
         LeanTween.alpha(background.rectTransform, 0f, .5f).setEaseInSine();
         LeanTween.cancelAll();

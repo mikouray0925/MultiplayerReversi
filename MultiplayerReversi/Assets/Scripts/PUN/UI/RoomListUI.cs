@@ -1,8 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using Photon.Pun;
 using Photon.Realtime;
 
 public class RoomListUI : MonoBehaviour
@@ -33,6 +30,7 @@ public class RoomListUI : MonoBehaviour
         if (contentRect) {
             Rect rect = contentRect.rect;
             rect.height = roomList.Count * heightPerRoom;
+            contentRect.sizeDelta = rect.size;
         }
     }
 }

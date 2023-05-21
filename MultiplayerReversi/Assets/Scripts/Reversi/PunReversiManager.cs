@@ -2,12 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.Events;
 using Photon.Pun;
 using Photon.Realtime;
 using PhotonHashtable = ExitGames.Client.Photon.Hashtable;
 using System.Text;
+using UnityEngine.UI;
 
 public class PunReversiManager : MonoBehaviourPunCallbacks
 {
@@ -35,6 +34,13 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
     
     PhotonView pv;
 
+    public GameObject BlackPlayerAvatar;
+    public GameObject WhitePlayerAvatar;
+    public GameObject BlackPlayerTurnText;
+    public GameObject WhitePlayerTurnText;
+    public GameObject BlackYourTurnText;
+    public GameObject WhiteYourTurnText;
+    public GameObject NowTurnObject;
     private void Awake()
     {
         if (TryGetComponent<PhotonView>(out PhotonView _pv))
@@ -170,6 +176,14 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
                     blackReady = false;
                     whiteReady = false;
                 }
+                else if (gameResult == ReversiManager.GameResult.Tie)
+                {
+                    // TODO
+                    currentState = GameState.End;
+                    propNeedToChange["Winner"] = -1;
+                    blackReady = false;
+                    whiteReady = false;
+                }
                 else
                 {
                     reversiManager.currentSide = sideOfNextRound;
@@ -231,23 +245,29 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
             // TODO: Hint player where can be placed.
             if (!isHintUpdated && reversiManager.NoChessIsFlipping())
             {
+                NowTurnObject.SetActive(true);
                 isHintUpdated = true;
-
-                bool _err = false;
-                foreach (var kvp in reversiManager.chessesOnBoard)
-                {
-                    if((ReversiChess.State)PhotonNetwork.CurrentRoom.CustomProperties[kvp.Key] != kvp.Value.currentState)
-                    {
-                        _err = true;
-                    }
-                }
-                if(_err)
-                {
-                    Debug.LogError("Chess data not match!");
-                    Debugger.instance.isDebugging = true;
-                }
-
                 reversiManager.clearHints();
+                BlackPlayerTurnText.SetActive(false);
+                WhitePlayerTurnText.SetActive(false);
+                BlackYourTurnText.SetActive(false);
+                WhiteYourTurnText.SetActive(false);
+                if(reversiManager.currentSide == ReversiManager.Side.Black) {
+                    BlackPlayerTurnText.SetActive(true);
+                }
+                else if(reversiManager.currentSide == ReversiManager.Side.White) {
+                    WhitePlayerTurnText.SetActive(true);
+                }
+                if(IsMyTurn() && GetMySide() == ReversiManager.Side.Black) {
+                    LeanTween.moveLocalY(BlackPlayerAvatar, -60, 0.5f).setEaseOutSine();
+                    LeanTween.moveLocalY(BlackPlayerAvatar, -80, 0.5f).setEaseOutSine().setDelay(0.5f);
+                    BlackYourTurnText.SetActive(true);
+                }
+                else if(IsMyTurn() && GetMySide() == ReversiManager.Side.White) {
+                    LeanTween.moveLocalY(WhitePlayerAvatar, -60, 0.5f).setEaseOutSine();
+                    LeanTween.moveLocalY(WhitePlayerAvatar, -80, 0.5f).setEaseOutSine().setDelay(0.5f);
+                    WhiteYourTurnText.SetActive(true);
+                }
                 Dictionary<string, List<string>> LegalMoves = reversiManager.FindLegalMoves(reversiManager.currentSide);
                 reversiManager.showHints(LegalMoves);
                 Debugger.instance.readyFakePlaceChess = true;
@@ -257,18 +277,19 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         if (currentState == GameState.End)
         {
             reversiManager.clearHints();
-            if(PhotonNetwork.LocalPlayer.ActorNumber == (int)PhotonNetwork.CurrentRoom.CustomProperties["Winner"])
-            {
-                TweenManager.instance.PlayVictoryAnimation();
-                AchievementHandler.HandleEndGame(reversiManager.chessesOnBoard, AchievementHandler.GameResult.Win, GetPlayerSide(PhotonNetwork.LocalPlayer.ActorNumber));
-            }
-            else
-            {
-                TweenManager.instance.PlayDefeatAnimation();
-            }
             if(!isPlayerReadySent){
+                
                 CallMasterSomePlayerIsReady();
                 isPlayerReadySent = true;
+
+                if(PhotonNetwork.LocalPlayer.ActorNumber == (int)PhotonNetwork.CurrentRoom.CustomProperties["Winner"]){
+                    TweenManager.instance.PlayVictoryAnimation();
+                    AchievementHandler.HandleEndGame(reversiManager.chessesOnBoard, AchievementHandler.GameResult.Win, GetPlayerSide(PhotonNetwork.LocalPlayer.ActorNumber));
+                }
+                else{
+                    TweenManager.instance.PlayDefeatAnimation();
+                    AchievementHandler.HandleEndGame(reversiManager.chessesOnBoard, AchievementHandler.GameResult.Lose, GetPlayerSide(PhotonNetwork.LocalPlayer.ActorNumber));
+                }
             } 
         }
     }
@@ -355,6 +376,11 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
             else return false;
         }
         return false;
+    }
+
+    public ReversiManager.Side GetMySide()
+    {
+        return GetPlayerSide(PhotonNetwork.LocalPlayer.ActorNumber);
     }
 
     private void OnChessClicked(string boardIndexToPlace)
@@ -572,5 +598,9 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         if(reversiManager.currentSide != ReversiManager.Side.Black && reversiManager.currentSide != ReversiManager.Side.White){
             reversiManager.currentSide = ReversiManager.Side.Black;
         }
+    }
+
+    public void clearAvatar(){
+        NowTurnObject.SetActive(false);
     }
 }

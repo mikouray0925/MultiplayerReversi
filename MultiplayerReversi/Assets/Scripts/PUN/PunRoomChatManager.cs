@@ -4,7 +4,6 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 using Photon.Pun;
-using Photon.Realtime;
 
 public class PunRoomChatManager : MonoBehaviourPunCallbacks
 {
@@ -26,6 +25,11 @@ public class PunRoomChatManager : MonoBehaviourPunCallbacks
     // Start is called before the first frame update
     private void Awake(){
         chatManager = this;
+        //If android, default open
+        #if UNITY_ANDROID
+        isTextboxOpen = true;
+        chatTextbox.SetActive(true);
+        #endif
     }
     private void Update(){
         if(Input.GetKeyDown(KeyCode.T) && !chatInput.isFocused){

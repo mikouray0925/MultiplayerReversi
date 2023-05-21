@@ -24,7 +24,7 @@ public class LobbyUIManager : MonoBehaviour
 
         {"Nice Move", "Make a move that flips 5 or more pieces"},
         {"Sheeeesh", "Make a move that flips 10 or more pieces"},
-        {"Huh? TF?", "Make a move that flips 20 or more pieces"},
+        {"Huh? TF?", "Make a move that flips 15 or more pieces"},
         {"Black King", "Win a game with 20 or more black pieces"},
         {"Black Emperor", "Win a game with 40 or more black pieces"},
         {"Black God", "Win a game with 60 or more black pieces"},
@@ -164,7 +164,7 @@ public class LobbyUIManager : MonoBehaviour
         stats += "Total Games Won: " + PlayerPrefs.GetInt("WinCount", 0) + "\n";
         stats += "Total Games Lost: " + PlayerPrefs.GetInt("LoseCount", 0) + "\n";
         stats += "Total Games Draw: " + PlayerPrefs.GetInt("DrawCount", 0) + "\n";
-        stats += "Win Ratio: " +  (PlayerPrefs.GetInt("TotalGameCount", 0) == 0 ? "N/A" : ((float)PlayerPrefs.GetInt("WinCount", 0) / (float)PlayerPrefs.GetInt("TotalGameCount", 0) * 100f).ToString("F2")) + "%\n";
+        stats += "Win Ratio: " +  (PlayerPrefs.GetInt("TotalGameCount", 0) == 0 ? "N/A\n" : (((float)PlayerPrefs.GetInt("WinCount", 0) / (float)PlayerPrefs.GetInt("TotalGameCount", 0) * 100f).ToString("F2")) + "%\n");
         StatsText.text = stats;
     }
 }
