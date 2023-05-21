@@ -67,16 +67,19 @@ public class ReversiChess : MonoBehaviour
     }
 
     public void zeroSecRotate(){
+
         if (currentState == State.Black) {
             //animator.enabled = true;
             //animator.Play("ZeroSecRotateBlack");
             //StartCoroutine(animSleep(0.1f).ToString());
+            meshRenderer.enabled = true;
             model_transform.rotation = Quaternion.identity;
         }
         if (currentState == State.White) {
             //animator.enabled = true;
             //animator.Play("ZeroSecRotateWhite");
             //StartCoroutine(animSleep(0.1f).ToString());
+            meshRenderer.enabled = true;
             model_transform.rotation = Quaternion.Euler(180f, 0, 0);
         }
     }

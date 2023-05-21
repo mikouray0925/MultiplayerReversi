@@ -61,9 +61,8 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
     
     public delegate bool Validation();
     public Validation ableToStartGame;
-
     public PhotonView pv;
-
+    public bool isAnotherGame = false;
     private void Awake() {
         if (TryGetComponent<PhotonView>(out PhotonView _pv)) {
             pv = _pv;
@@ -71,6 +70,7 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
             pv = gameObject.AddComponent<PhotonView>();
         }
         chatManager.pv = pv;
+        BoardTexNumber = AchievementManager.BoardTexId;
     }
 
     private void Start() {
@@ -158,27 +158,40 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
     }
 
     public void BoardTexButtonCallback(int i){
+        // If MaterialHolder is not loaded, use default
+        if(!MaterialHolder.instance.isLoadSuccess) {
+            BoardImageDemo.sprite = BoardDefault;
+            BoardTex.SetActive(false);
+            Board.GetComponent<MeshRenderer>().material = BoardMaterialDefault;
+
+            ButtonLeft.SetActive(false);
+            ButtonRight.SetActive(false);
+            return;
+        }
         BoardTexNumber += i;
         if(BoardTexNumber < 0) BoardTexNumber = 3;
         if(BoardTexNumber > 3) BoardTexNumber = 0;
-        if(BoardTexNumber == 0 && MaterialHolder.instance.isLoadSuccess) {
+        AchievementManager.BoardTexId = BoardTexNumber;
+
+        ButtonLeft.SetActive(true);
+        ButtonRight.SetActive(true);
+
+        if(BoardTexNumber == 0) {
             BoardImageDemo.sprite = BoardDefault;
             BoardTex.SetActive(false);
             Board.GetComponent<MeshRenderer>().material = BoardMaterialDefault;
             return;
         }
+
+        BoardTex.SetActive(true);
+        Board.GetComponent<MeshRenderer>().material = BoardMaterialTransparent;
+
         if(MaterialHolder.instance.getSprite(BoardTexNumber - 1,out Sprite sprite)){
             BoardImageDemo.sprite = sprite;
             BoardImageDemo.gameObject.SetActive(true);
             ButtonLeft.SetActive(true);
             ButtonRight.SetActive(true);
         }
-        else {
-            BoardImageDemo.sprite = BoardDefault;
-            ButtonLeft.SetActive(false);
-            ButtonRight.SetActive(false);
-        }
-
         if(MaterialHolder.instance.getMaterial(BoardTexNumber - 1,out Material material)){
             BoardTex.SetActive(true);
             BoardTex.GetComponent<MeshRenderer>().material = material;
@@ -246,19 +259,18 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
     [PunRPC]
     private void RpcStartGame(PhotonMessageInfo info) {
         currentState = State.Playing;
-        TweenManager.instance.isPlayingEndAnimation = false;
+        if(isAnotherGame) reversiManager.NewGameInitialize();
+        BoardTexButtonCallback(0);
         onGameStarted.Invoke();
     }
     
     [PunRPC]
     private void RpcReturnToRoom(PhotonMessageInfo info) {
         currentState = State.Preparing;
-        TweenManager.instance.ClearGameEndAnimation();
-        reversiManager.reversiManager.ClearAllChesses();
-        reversiManager.clearAvatar();
         BoardTex.SetActive(false);
-        BoardTexButtonCallback(0);
         Board.GetComponent<Renderer>().material = BoardMaterialDefault;
+        reversiManager.EndGameCleanUp();
+        isAnotherGame = true;
         if (PhotonNetwork.IsMasterClient) {
             PhotonHashtable propNeedToChange = new PhotonHashtable();
             propNeedToChange["roomState"] = currentState;
@@ -273,8 +285,8 @@ public class PunRoomManager : MonoBehaviourPunCallbacks
 
     [PunRPC]
     private void RpcEndGame(PhotonMessageInfo info) {
-        if (!PhotonNetwork.IsMasterClient) currentState = State.Preparing;
-
+        currentState = State.Preparing;
+        reversiManager.currentState = PunReversiManager.GameState.Paused;
         //TODO add EndGame event
         //Achievement, Record, etc.
         //onGameEnded.Invoke();

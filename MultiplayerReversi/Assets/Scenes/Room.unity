@@ -1180,6 +1180,102 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 824c72ca8bf0b184e9deaeb76c4de38f, type: 3}
   m_PrefabInstance: {fileID: 206707458}
   m_PrefabAsset: {fileID: 0}
+--- !u!82 &206707461
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 206707459}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 1
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &258291716
 GameObject:
   m_ObjectHideFlags: 0
@@ -2757,8 +2853,8 @@ RectTransform:
   - {fileID: 1723609084}
   - {fileID: 727303988}
   - {fileID: 1972669194}
-  - {fileID: 2131742153}
   - {fileID: 1043419864}
+  - {fileID: 2131742153}
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3028,7 +3124,7 @@ RectTransform:
   - {fileID: 1268713365}
   - {fileID: 39749167}
   m_Father: {fileID: 771910785}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
@@ -3468,6 +3564,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 198cccfc24ae5d44bbe9f9cffa6ba682, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PlaceChessSound: {fileID: 8300000, guid: 0816755de816f144caa55d6fde7a9d1c, type: 3}
+  FlipChessSound: {fileID: 8300000, guid: 33d38b291e3930348b5fdca2dc652656, type: 3}
+  audioSource: {fileID: 206707461}
   currentSide: 0
 --- !u!114 &1116413979
 MonoBehaviour:
@@ -6402,7 +6501,7 @@ RectTransform:
   - {fileID: 258291717}
   - {fileID: 464714538}
   m_Father: {fileID: 771910785}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}

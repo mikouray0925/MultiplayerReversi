@@ -12,6 +12,7 @@ class AchievementManager : MonoBehaviour{
     private static int LoseCount;
     private static int DrawCount;
     private static int TotalGameCount;
+    public static int BoardTexId;
     private static Dictionary<string, bool> AchievementProgress = new Dictionary<string, bool>();
     private void Awake(){
         Instance = this;
@@ -58,7 +59,7 @@ class AchievementManager : MonoBehaviour{
         PlayerPrefs.SetInt("LoseCount", LoseCount);
         PlayerPrefs.SetInt("DrawCount", DrawCount);
         PlayerPrefs.SetInt("TotalGameCount", TotalGameCount);
-        
+        PlayerPrefs.SetInt("BoardTexId",BoardTexId);
         PlayerPrefs.SetInt("HasSave", 1);
         PlayerPrefs.Save();
     }
@@ -75,6 +76,7 @@ class AchievementManager : MonoBehaviour{
         WinCount = PlayerPrefs.GetInt("WinCount");
         LoseCount = PlayerPrefs.GetInt("LoseCount");
         DrawCount = PlayerPrefs.GetInt("DrawCount");
+        BoardTexId = PlayerPrefs.GetInt("BoardTexId");
         TotalGameCount = PlayerPrefs.GetInt("TotalGameCount");
         Debug.Log(sb.ToString());
         return true;

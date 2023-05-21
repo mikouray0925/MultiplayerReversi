@@ -4,6 +4,9 @@ using UnityEngine;
 using System.Text;
 public class ReversiManager : MonoBehaviour
 {
+    public AudioClip PlaceChessSound;
+    public AudioClip FlipChessSound;
+    public AudioSource audioSource;
     public Dictionary<string, ReversiChess> chessesOnBoard;
     public bool isSpawningChesses { get; private set; }
 
@@ -22,6 +25,7 @@ public class ReversiManager : MonoBehaviour
         return (currentSide == Side.Black) ? Side.White : Side.Black;
     }
     public delegate void Callback();
+
     public void SpawnChesses(Highlight.Callback onClickChess = null, Callback onChessesSpawned = null)
     {
         StartCoroutine(SpawnChessesCoroutine(onClickChess, onChessesSpawned));
@@ -72,6 +76,14 @@ public class ReversiManager : MonoBehaviour
                     chess.CurrentState = ReversiChess.State.Unused;
                     chess.meshRenderer.enabled = false;
                     chess.hint.gameObject.SetActive(false);
+                    if(boardIndex == "4D" || boardIndex == "5E") {
+                        chess.CurrentState = ReversiChess.State.White;
+                        Debug.Log("Successfully set" + boardIndex + "to White");
+                    }
+                    if(boardIndex == "4E" || boardIndex == "5D"){
+                        chess.CurrentState = ReversiChess.State.Black;
+                        Debug.Log("Successfully set" + boardIndex + "to Black");
+                    } 
                 }
             }
         }
@@ -183,6 +195,8 @@ public class ReversiManager : MonoBehaviour
         {
             clearHints();
             placingChess.meshRenderer.enabled = true;
+            Debug.Log("Place Chess Sound " + Time.time);
+            audioSource.PlayOneShot(PlaceChessSound);
             if (currentSide == Side.Black)
             {
                 placingChess.PlaceBlack();
@@ -195,11 +209,12 @@ public class ReversiManager : MonoBehaviour
             {
                 Debug.Log("Clamped chesses: " + clampedChesses.Count);
                 if (clampedChesses.Count > 0)
-                {
+                {   
                     foreach (var clampedChess in clampedChesses)
                     {
                         StartCoroutine(chessesOnBoard[clampedChess].Flip());
                     }
+                    StartCoroutine(flipChessSoundFX());
                     return true;
                 }
                 else return false;
@@ -209,6 +224,11 @@ public class ReversiManager : MonoBehaviour
         else return false;
     }
 
+    private IEnumerator flipChessSoundFX(){
+        yield return new WaitForSeconds(0.15f);
+        Debug.Log("Flip Chess Sound " + Time.time);
+        audioSource.PlayOneShot(FlipChessSound);
+    }
     public bool NoChessIsFlipping()
     {
         return ReversiChess.NoChessIsFlipping;

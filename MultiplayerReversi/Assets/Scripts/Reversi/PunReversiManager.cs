@@ -84,6 +84,24 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         }
     }
 
+    public void NewGameInitialize(){
+        currentState = PunReversiManager.GameState.Paused;
+        TweenManager.instance.isPlayingEndAnimation = false;
+        isPlayerReadySent = false;
+        reversiManager.currentSide = ReversiManager.Side.Black;
+        if(PhotonNetwork.IsMasterClient){
+            blackReady = false;
+            whiteReady = false;
+        }
+    }
+
+    public void EndGameCleanUp(){
+        TweenManager.instance.ClearGameEndAnimation();
+        reversiManager.ClearAllChesses();
+        reversiManager.syncBoardwithLocalData();
+        clearAvatar();
+    }
+
     private void FixedUpdate()
     {
         if(PhotonNetwork.Time - LastSlowUpdateTime > .2) {
@@ -98,21 +116,26 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         }
         if (PhotonNetwork.InRoom && roomManager != null)
         {
-            if(PhotonNetwork.IsMasterClient &&
-            (PunRoomManager.State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"] == PunRoomManager.State.Preparing ){
-                FillEmptyPlayer();
-                PhotonHashtable propNeedToChange = new PhotonHashtable();
-                propNeedToChange["blackActId"] = blackActIdCache;
-                propNeedToChange["whiteActId"] = whiteActIdCache;
-                roomManager.ChangeCustomProperties(propNeedToChange);
+            if(PhotonNetwork.IsMasterClient){
+                if(roomManager.currentState == PunRoomManager.State.Preparing){
+                    FillEmptyPlayer();
+                    PhotonHashtable propNeedToChange = new PhotonHashtable();
+                    propNeedToChange["blackActId"] = blackActIdCache;
+                    propNeedToChange["whiteActId"] = whiteActIdCache;
+                    roomManager.ChangeCustomProperties(propNeedToChange);
+                }
+                else if (roomManager.currentState == PunRoomManager.State.Playing){
+                    if(TweenManager.instance.isPaused && currentState != GameState.Paused) TweenManager.instance.PlayGameResumeAnimation();
+                    DoMasterOnlyBusiness();
+                    DoCommonBusiness();
+                }
             }
-            if((PunRoomManager.State)PhotonNetwork.CurrentRoom.CustomProperties["roomState"] == PunRoomManager.State.Playing){
-                if(TweenManager.instance.isPaused && currentState != GameState.Paused) TweenManager.instance.PlayGameResumeAnimation();
-                if (PhotonNetwork.IsMasterClient) DoMasterOnlyBusiness();
-                else DoNonMasterOnlyBusiness();
-                DoCommonBusiness();
-            }
-            
+            else{
+                if(roomManager.currentState == PunRoomManager.State.Playing){
+                    DoNonMasterOnlyBusiness();
+                    DoCommonBusiness();
+                }
+            }            
         }
     }
 
@@ -210,7 +233,8 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
 
     private void DoNonMasterOnlyBusiness()
     {
-        if((currentState == GameState.WaitingForAllReady || currentState == GameState.WaitingForOrder)
+        if((BlackPlayer == null || WhitePlayer == null)
+         && (currentState == GameState.WaitingForAllReady || currentState == GameState.WaitingForOrder)
          && (GameState)PhotonNetwork.CurrentRoom.CustomProperties["gameState"] == GameState.Paused)
         {
            OnGamePlayToPaused();
@@ -285,6 +309,10 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
                 if(PhotonNetwork.LocalPlayer.ActorNumber == (int)PhotonNetwork.CurrentRoom.CustomProperties["Winner"]){
                     TweenManager.instance.PlayVictoryAnimation();
                     AchievementHandler.HandleEndGame(reversiManager.chessesOnBoard, AchievementHandler.GameResult.Win, GetPlayerSide(PhotonNetwork.LocalPlayer.ActorNumber));
+                }
+                else if ((int)PhotonNetwork.CurrentRoom.CustomProperties["Winner"] == -1){
+                    TweenManager.instance.PlayTieAnimation();
+                    AchievementHandler.HandleEndGame(reversiManager.chessesOnBoard, AchievementHandler.GameResult.Tie, GetPlayerSide(PhotonNetwork.LocalPlayer.ActorNumber));
                 }
                 else{
                     TweenManager.instance.PlayDefeatAnimation();
@@ -527,10 +555,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
     private void InitGame()
     {   
         reversiManager.ClearAllChesses();
-        reversiManager.chessesOnBoard["4D"].CurrentState = ReversiChess.State.White;
-        reversiManager.chessesOnBoard["4E"].CurrentState = ReversiChess.State.Black;
-        reversiManager.chessesOnBoard["5D"].CurrentState = ReversiChess.State.Black;
-        reversiManager.chessesOnBoard["5E"].CurrentState = ReversiChess.State.White;
+        reversiManager.syncBoardwithLocalData();
         boardDataLoaded = true;
         CallMasterUploadGameData();
     }
