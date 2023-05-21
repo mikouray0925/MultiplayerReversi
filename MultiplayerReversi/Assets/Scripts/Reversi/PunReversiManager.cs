@@ -86,7 +86,6 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
 
     public void NewGameInitialize(){
         currentState = PunReversiManager.GameState.Paused;
-        TweenManager.instance.isPlayingEndAnimation = false;
         isPlayerReadySent = false;
         reversiManager.currentSide = ReversiManager.Side.Black;
         if(PhotonNetwork.IsMasterClient){
@@ -302,7 +301,7 @@ public class PunReversiManager : MonoBehaviourPunCallbacks
         {
             reversiManager.clearHints();
             if(!isPlayerReadySent){
-                
+                TweenManager.instance.TweenReset();
                 CallMasterSomePlayerIsReady();
                 isPlayerReadySent = true;
 
