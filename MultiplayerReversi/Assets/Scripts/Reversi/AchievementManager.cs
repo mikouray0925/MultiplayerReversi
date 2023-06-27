@@ -101,6 +101,15 @@ class AchievementManager : MonoBehaviour{
             PlayerPrefs.DeleteKey(str);
         }
         PlayerPrefs.DeleteKey("HasSave");
+        foreach(var str in AchievementList){
+            AchievementProgress[str] = false;
+        }
+        WinCount = 0;
+        LoseCount = 0;
+        DrawCount = 0;
+        TotalGameCount = 0;
+        BoardTexId = 0;
+        PlayerPrefs.Save();
     }
 
     private static List<string> AchievementList  = new List<string>(){
